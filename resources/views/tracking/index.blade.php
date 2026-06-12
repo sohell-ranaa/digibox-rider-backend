@@ -456,9 +456,14 @@
                             </div>
 
                             <div class="d-flex justify-content-between align-items-center mb-2" id="liveStatusBar">
-                                <small class="text-muted">
-                                    <i class="bi bi-arrow-clockwise"></i> <span id="liveStatusText">Auto-refreshing every 30 seconds</span>
-                                </small>
+                                <div class="d-flex align-items-center gap-2">
+                                    <button class="btn btn-sm btn-primary" onclick="loadLiveRiders()" title="Refresh live data">
+                                        <i class="bi bi-arrow-clockwise"></i>
+                                    </button>
+                                    <small class="text-muted">
+                                        <span id="liveStatusText">Click refresh to update</span>
+                                    </small>
+                                </div>
                                 <small class="text-muted" id="liveLastUpdate">Last updated: Never</small>
                             </div>
                             <div class="d-flex gap-3 flex-wrap" style="font-size: 0.75rem;">
@@ -718,9 +723,6 @@
             liveMap.invalidateSize();
             renderInstallationLocations(); // Re-render installations
             loadLiveRiders();
-            // Start auto-refresh
-            if (liveRefreshInterval) clearInterval(liveRefreshInterval);
-            liveRefreshInterval = setInterval(loadLiveRiders, 30000); // 30 seconds
         }, 100);
     });
 
@@ -728,11 +730,6 @@
         setTimeout(() => {
             map.invalidateSize();
         }, 100);
-        // Stop auto-refresh when leaving live tab
-        if (liveRefreshInterval) {
-            clearInterval(liveRefreshInterval);
-            liveRefreshInterval = null;
-        }
     });
 
     // Render installation locations on live map (once)
@@ -740,9 +737,6 @@
 
     // Load live riders on page load
     loadLiveRiders();
-
-    // Start auto-refresh
-    liveRefreshInterval = setInterval(loadLiveRiders, 30000); // 30 seconds
 
     // Render installation locations on live map
     function renderInstallationLocations() {
@@ -928,7 +922,7 @@
 
         // Fit map to show all riders and installations
         if (bounds.length > 0) {
-            liveMap.fitBounds(bounds, { padding: [80, 80], maxZoom: 14 });
+            liveMap.fitBounds(bounds, { padding: [80, 80], maxZoom: 16 });
         }
     }
 
@@ -936,12 +930,6 @@
     function viewRiderHistory(riderId, riderName) {
         isViewingRiderHistory = true;
         currentViewingRiderId = riderId;
-
-        // Stop auto-refresh
-        if (liveRefreshInterval) {
-            clearInterval(liveRefreshInterval);
-            liveRefreshInterval = null;
-        }
 
         // Update UI
         document.getElementById('backToLiveView').style.display = 'block';
@@ -1155,14 +1143,10 @@
 
         // Hide back button
         document.getElementById('backToLiveView').style.display = 'none';
-        document.getElementById('liveStatusText').textContent = 'Auto-refreshing every 30 seconds';
+        document.getElementById('liveStatusText').textContent = 'Click refresh to update';
 
         // Reload all riders
         loadLiveRiders();
-
-        // Restart auto-refresh
-        if (liveRefreshInterval) clearInterval(liveRefreshInterval);
-        liveRefreshInterval = setInterval(loadLiveRiders, 30000);
     }
 
     // Load history button
