@@ -23,16 +23,12 @@ class RiderController extends Controller
 
         // Enhance each rider with computed stats
         $riders->each(function($rider) {
-            // Check if online (location within last 10 minutes)
-            $latestLocation = $rider->locationPoints->first();
-            $rider->is_online = $latestLocation &&
-                $latestLocation->recorded_at->diffInMinutes(now()) <= 10;
+            // Note: is_online and is_on_duty are now computed via model accessors
+            // which automatically handle stale session detection
 
             // Last seen
+            $latestLocation = $rider->locationPoints->first();
             $rider->last_seen = $latestLocation ? $latestLocation->recorded_at : null;
-
-            // Check if currently on duty
-            $rider->is_on_duty = $rider->dutySessions->where('status', 'active')->isNotEmpty();
 
             // Calculate total duty hours this week
             $weekStart = now()->startOfWeek();

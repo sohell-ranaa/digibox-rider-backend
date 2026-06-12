@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use App\Models\DutySession;
-use App\Models\LocationPoint;
 use App\Models\InstallationVisit;
 use App\Models\StopRecord;
 use Carbon\Carbon;
@@ -39,7 +38,7 @@ class CleanupOldData extends Command
         }
 
         // Count records to be deleted
-        $locationPointsCount = LocationPoint::where('recorded_at', '<', $cutoffDate)->count();
+        $locationBatchesCount = DB::table('location_batches')->where('batch_start_time', '<', $cutoffDate)->count();
         $stopRecordsCount = StopRecord::where('started_at', '<', $cutoffDate)->count();
         $visitsCount = InstallationVisit::where('arrived_at', '<', $cutoffDate)->count();
         $sessionsCount = DutySession::where('started_at', '<', $cutoffDate)->count();
@@ -47,14 +46,14 @@ class CleanupOldData extends Command
         $this->table(
             ['Table', 'Records to Delete', 'Status'],
             [
-                ['location_points', number_format($locationPointsCount), $locationPointsCount > 0 ? '⚠️' : '✅'],
+                ['location_batches', number_format($locationBatchesCount), $locationBatchesCount > 0 ? '⚠️' : '✅'],
                 ['stop_records', number_format($stopRecordsCount), $stopRecordsCount > 0 ? '⚠️' : '✅'],
                 ['installation_visits', number_format($visitsCount), $visitsCount > 0 ? '⚠️' : '✅'],
                 ['duty_sessions', number_format($sessionsCount), $sessionsCount > 0 ? '⚠️' : '✅'],
             ]
         );
 
-        $totalRecords = $locationPointsCount + $stopRecordsCount + $visitsCount + $sessionsCount;
+        $totalRecords = $locationBatchesCount + $stopRecordsCount + $visitsCount + $sessionsCount;
 
         if ($totalRecords === 0) {
             $this->info('✅ No old data to clean up. Database is already optimized!');
@@ -83,8 +82,8 @@ class CleanupOldData extends Command
             $bar = $this->output->createProgressBar(4);
             $bar->start();
 
-            // Delete location points
-            LocationPoint::where('recorded_at', '<', $cutoffDate)->delete();
+            // Delete location batches
+            DB::table('location_batches')->where('batch_start_time', '<', $cutoffDate)->delete();
             $bar->advance();
 
             // Delete stop records
@@ -107,7 +106,7 @@ class CleanupOldData extends Command
             $this->info('✅ Cleanup completed successfully!');
             $this->newLine();
             $this->info("Deleted:");
-            $this->line("  • Location points: " . number_format($locationPointsCount));
+            $this->line("  • Location batches: " . number_format($locationBatchesCount));
             $this->line("  • Stop records: " . number_format($stopRecordsCount));
             $this->line("  • Installation visits: " . number_format($visitsCount));
             $this->line("  • Duty sessions: " . number_format($sessionsCount));
@@ -115,7 +114,7 @@ class CleanupOldData extends Command
 
             // Optimize tables
             $this->info('🔧 Optimizing database tables...');
-            DB::statement('OPTIMIZE TABLE location_points');
+            DB::statement('OPTIMIZE TABLE location_batches');
             DB::statement('OPTIMIZE TABLE stop_records');
             DB::statement('OPTIMIZE TABLE installation_visits');
             DB::statement('OPTIMIZE TABLE duty_sessions');

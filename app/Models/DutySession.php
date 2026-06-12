@@ -28,11 +28,6 @@ class DutySession extends Model
         return $this->belongsTo(Rider::class);
     }
 
-    public function locationPoints()
-    {
-        return $this->hasMany(LocationPoint::class);
-    }
-
     public function stopRecords()
     {
         return $this->hasMany(StopRecord::class);
@@ -51,10 +46,5 @@ class DutySession extends Model
     public function summary()
     {
         return $this->hasOne(DutySessionSummary::class);
-    }
-
-    public function aggregatedLocationPoints()
-    {
-        return $this->hasMany(AggregatedLocationPoint::class);
     }
 }

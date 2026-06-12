@@ -7,8 +7,8 @@ use App\Models\Rider;
 use App\Models\StopRecord;
 use App\Models\InstallationVisit;
 use App\Models\DutySession;
-use App\Models\LocationPoint;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class ReportController extends Controller
@@ -66,14 +66,18 @@ class ReportController extends Controller
     {
         // Today's stats
         $today = Carbon::today();
-        $todayLocations = LocationPoint::whereDate('recorded_at', $today)->count();
+        $todayLocations = DB::table('location_batches')
+            ->whereDate('batch_start_time', $today)
+            ->sum('point_count');
         $todayStops = StopRecord::whereDate('started_at', $today)->count();
         $todayVisits = InstallationVisit::whereDate('arrived_at', $today)->count();
         $activeDutySessions = DutySession::where('status', 'active')->count();
 
         // This month's stats
         $monthStart = Carbon::now()->startOfMonth();
-        $monthLocations = LocationPoint::where('recorded_at', '>=', $monthStart)->count();
+        $monthLocations = DB::table('location_batches')
+            ->where('batch_start_time', '>=', $monthStart)
+            ->sum('point_count');
         $monthStops = StopRecord::where('started_at', '>=', $monthStart)->count();
         $monthVisits = InstallationVisit::where('arrived_at', '>=', $monthStart)->count();
         $monthDutySessions = DutySession::where('started_at', '>=', $monthStart)->count();
@@ -87,7 +91,9 @@ class ReportController extends Controller
         for ($i = 6; $i >= 0; $i--) {
             $date = Carbon::today()->subDays($i);
             $days[] = $date->format('M d');
-            $locations[] = LocationPoint::whereDate('recorded_at', $date)->count();
+            $locations[] = DB::table('location_batches')
+                ->whereDate('batch_start_time', $date)
+                ->sum('point_count') ?: 0;
             $stops[] = StopRecord::whereDate('started_at', $date)->count();
             $visits[] = InstallationVisit::whereDate('arrived_at', $date)->count();
         }

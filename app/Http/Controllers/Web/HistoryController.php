@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Models\Rider;
 use App\Models\DutySession;
-use App\Models\LocationPoint;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class HistoryController extends Controller
@@ -37,17 +37,26 @@ class HistoryController extends Controller
             return response()->json(['error' => 'Duty session ID required'], 400);
         }
 
-        $locations = LocationPoint::where('duty_session_id', $dutySessionId)
-            ->orderBy('recorded_at')
-            ->get()
-            ->map(function($location) {
-                return [
-                    'latitude' => $location->latitude,
-                    'longitude' => $location->longitude,
-                    'recorded_at' => $location->recorded_at->format('Y-m-d H:i:s'),
-                    'speed' => $location->speed,
+        // Get batches for this session
+        $batches = DB::table('location_batches')
+            ->where('duty_session_id', $dutySessionId)
+            ->orderBy('batch_start_time')
+            ->get();
+
+        $locations = [];
+        foreach ($batches as $batch) {
+            $points = json_decode($batch->points, true);
+            $batchDate = substr($batch->batch_start_time, 0, 10);
+
+            foreach ($points as $point) {
+                $locations[] = [
+                    'latitude' => $point['lat'],
+                    'longitude' => $point['lng'],
+                    'recorded_at' => $batchDate . ' ' . $point['ts'],
+                    'speed' => $point['spd'],
                 ];
-            });
+            }
+        }
 
         return response()->json($locations);
     }

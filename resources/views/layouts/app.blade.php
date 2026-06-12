@@ -853,8 +853,8 @@
 
                 <!-- Sidebar Footer -->
                 <div class="sidebar-footer mt-auto p-3 text-center border-top border-white border-opacity-10">
-                    <small class="text-white-50 d-block mb-1">Version 1.0.0</small>
-                    <small class="text-white-50">© 2024 Digibox</small>
+                    <small class="text-white-50 d-block mb-1">Version 1.2.11</small>
+                    <small class="text-white-50">© 2026 Digibox</small>
                 </div>
             </div>
 

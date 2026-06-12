@@ -60,13 +60,13 @@
         <div class="stat-card success">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    <h6 class="mb-1 opacity-75">Active Now</h6>
-                    <h2 class="mb-0">{{ $activeRiders }}</h2>
+                    <h6 class="mb-1 opacity-75">Online Now</h6>
+                    <h2 class="mb-0">{{ $onlineRiders }}</h2>
                     <small class="text-white-50">
-                        <i class="bi bi-clock-history"></i> Currently on duty
+                        <i class="bi bi-circle-fill pulse" style="font-size: 8px;"></i> Currently online
                     </small>
                 </div>
-                <i class="bi bi-person-check-fill d-none d-md-block" style="font-size: 48px; opacity: 0.3;"></i>
+                <i class="bi bi-broadcast-pin d-none d-md-block" style="font-size: 48px; opacity: 0.3;"></i>
             </div>
         </div>
     </div>
@@ -97,6 +97,38 @@
                     </small>
                 </div>
                 <i class="bi bi-building d-none d-md-block" style="font-size: 48px; opacity-0.3;"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- GPS TRACKING QUALITY --}}
+<div class="row mb-4 g-2 g-md-3">
+    <div class="col-6 col-md-6">
+        <div class="stat-card" style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h6 class="mb-1 opacity-75">GPS Accuracy Today</h6>
+                    <h2 class="mb-0">{{ $todayAvgAccuracy }}m</h2>
+                    <small class="text-muted">
+                        <i class="bi bi-check-circle-fill text-success"></i> Average accuracy
+                    </small>
+                </div>
+                <i class="bi bi-bullseye d-none d-md-block" style="font-size: 48px; opacity: 0.3; color: var(--digibox-blue);"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-6">
+        <div class="stat-card" style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h6 class="mb-1 opacity-75">High Quality GPS</h6>
+                    <h2 class="mb-0">{{ $todayHighAccuracyPercent }}%</h2>
+                    <small class="text-muted">
+                        <i class="bi bi-stars"></i> Points &lt;20m accuracy
+                    </small>
+                </div>
+                <i class="bi bi-star-fill d-none d-md-block" style="font-size: 48px; opacity: 0.3; color: var(--success-green);"></i>
             </div>
         </div>
     </div>
@@ -159,6 +191,43 @@
                             <small class="text-muted fw-semibold">GPS Points</small>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- LIVE RIDERS MAP --}}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card" style="border-top: 4px solid var(--success-green);">
+            <div class="card-body">
+                <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-start align-items-sm-center mb-3 mb-md-4 gap-2">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-map me-2" style="color: var(--success-green);"></i>Live Rider Locations
+                    </h5>
+                    <div class="d-flex gap-2 align-items-center">
+                        <span class="badge" style="background: var(--success-green); font-size: 13px; padding: 6px 14px;">
+                            <i class="bi bi-circle-fill pulse me-1" style="font-size: 8px;"></i>{{ $onlineRiders }} Online
+                        </span>
+                        <span class="badge bg-secondary" style="font-size: 13px; padding: 6px 14px;">
+                            {{ $totalRiders - $onlineRiders }} Offline
+                        </span>
+                    </div>
+                </div>
+
+                <div id="liveMap" style="height: 500px; border-radius: 12px; overflow: hidden;"></div>
+
+                <div class="mt-3 d-flex gap-3 flex-wrap justify-content-center">
+                    <small class="text-muted">
+                        <i class="bi bi-circle-fill text-success"></i> Online (last 10 min)
+                    </small>
+                    <small class="text-muted">
+                        <i class="bi bi-circle-fill text-secondary"></i> Offline
+                    </small>
+                    <small class="text-muted">
+                        <i class="bi bi-circle-fill" style="color: var(--digibox-blue);"></i> On duty session
+                    </small>
                 </div>
             </div>
         </div>
@@ -316,22 +385,22 @@
     </div>
 </div>
 
-{{-- ACTIVE SESSIONS & RECENT ACTIVITY --}}
+{{-- ONLINE RIDERS & RECENT ACTIVITY --}}
 <div class="row g-3">
     <div class="col-12 col-lg-6">
         <div class="card" style="border-left: 4px solid var(--success-green);">
             <div class="card-body">
                 <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-start align-items-sm-center mb-3 mb-md-4 gap-2">
                     <h5 class="card-title mb-0">
-                        <i class="bi bi-broadcast me-2" style="color: var(--success-green);"></i>Active Riders
+                        <i class="bi bi-broadcast me-2" style="color: var(--success-green);"></i>Online Riders
                     </h5>
                     <span class="badge" style="background: var(--success-green); font-size: 13px; padding: 6px 14px;">
-                        <i class="bi bi-circle-fill pulse me-1" style="font-size: 8px;"></i>{{ $activeSessions->count() }} Live
+                        <i class="bi bi-circle-fill pulse me-1" style="font-size: 8px;"></i>{{ $onlineRidersList->count() }} Live
                     </span>
                 </div>
 
                 <div style="max-height: 500px; overflow-y: auto;">
-                    @forelse($activeSessions as $session)
+                    @forelse($onlineRidersList as $rider)
                     <div class="d-flex align-items-start mb-4 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}" style="transition: all 0.3s;">
                         <div class="me-3">
                             <div style="width: 50px; height: 50px; border-radius: 12px; background: linear-gradient(135deg, var(--success-green) 0%, #059669 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
@@ -339,30 +408,42 @@
                             </div>
                         </div>
                         <div class="flex-grow-1">
-                            <h6 class="mb-2 fw-bold">{{ $session->rider->name }}</h6>
+                            <h6 class="mb-2 fw-bold">{{ $rider->name }}</h6>
                             <div class="d-flex flex-column gap-1">
+                                @if($rider->active_session)
                                 <small class="text-muted">
-                                    <i class="bi bi-clock-fill text-primary"></i> Duration: <strong class="text-dark">{{ $session->current_duration }}</strong>
+                                    <i class="bi bi-clock-fill text-primary"></i> Duration: <strong class="text-dark">{{ $rider->session_duration }}</strong>
                                 </small>
                                 <small class="text-muted">
-                                    <i class="bi bi-play-circle-fill text-success"></i> Started: <strong class="text-dark">{{ $session->started_at->format('h:i A') }}</strong>
+                                    <i class="bi bi-play-circle-fill text-success"></i> Started: <strong class="text-dark">{{ $rider->active_session->started_at->format('h:i A') }}</strong>
                                 </small>
-                                @if($session->latest_location)
+                                @endif
+                                @if($rider->latest_location)
                                 <small class="text-muted">
-                                    <i class="bi bi-geo-alt-fill text-danger"></i> Last ping: <strong class="text-dark">{{ $session->latest_location->recorded_at->diffForHumans() }}</strong>
+                                    <i class="bi bi-geo-alt-fill text-danger"></i> Last ping: <strong class="text-dark">{{ $rider->latest_location->recorded_at->diffForHumans() }}</strong>
+                                </small>
+                                <small class="text-muted">
+                                    <i class="bi bi-bullseye text-info"></i> Accuracy: <strong class="text-dark">{{ number_format($rider->latest_location->accuracy, 1) }}m</strong>
                                 </small>
                                 @endif
                             </div>
                         </div>
-                        <span class="badge bg-success-subtle text-success" style="align-self: flex-start; padding: 8px 12px; border-radius: 8px;">
-                            <i class="bi bi-circle-fill" style="font-size: 6px;"></i> Active
-                        </span>
+                        <div class="d-flex flex-column gap-2" style="align-self: flex-start;">
+                            <span class="badge bg-success-subtle text-success" style="padding: 8px 12px; border-radius: 8px;">
+                                <i class="bi bi-circle-fill" style="font-size: 6px;"></i> Online
+                            </span>
+                            @if($rider->active_session)
+                            <span class="badge" style="background: var(--digibox-blue); padding: 6px 10px; border-radius: 8px; font-size: 11px;">
+                                <i class="bi bi-briefcase-fill" style="font-size: 10px;"></i> On Duty
+                            </span>
+                            @endif
+                        </div>
                     </div>
                     @empty
                     <div class="text-center text-muted py-5">
-                        <i class="bi bi-person-x" style="font-size: 64px; opacity: 0.2;"></i>
-                        <p class="mb-0 mt-3 fw-semibold">No active riders right now</p>
-                        <small>Riders will appear here when they start duty</small>
+                        <i class="bi bi-wifi-off" style="font-size: 64px; opacity: 0.2;"></i>
+                        <p class="mb-0 mt-3 fw-semibold">No riders online right now</p>
+                        <small>Riders will appear here when they go online</small>
                     </div>
                     @endforelse
                 </div>
@@ -877,6 +958,132 @@ new Chart(hourlyCtx, {
         }
     }
 });
+
+// =====================================================
+// LIVE RIDERS MAP
+// =====================================================
+const liveMap = L.map('liveMap').setView([23.8103, 90.4125], 12); // Default: Dhaka, Bangladesh
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors',
+    maxZoom: 19
+}).addTo(liveMap);
+
+// Rider data from backend
+const ridersData = @json($allRidersWithLocation);
+
+// Track markers for real-time updates
+const riderMarkers = {};
+
+// Add riders to map
+ridersData.forEach(rider => {
+    if (!rider.latest_location) return; // Skip if no location
+
+    const lat = rider.latest_location.latitude;
+    const lng = rider.latest_location.longitude;
+    const isOnline = rider.is_currently_online;
+    const hasActiveSession = rider.active_session !== null;
+
+    // Determine marker color
+    let markerColor, markerIcon, statusText, statusClass;
+    if (isOnline && hasActiveSession) {
+        markerColor = '#2563EB'; // Blue for online with active session
+        markerIcon = 'bi-briefcase-fill';
+        statusText = 'Online - On Duty';
+        statusClass = 'primary';
+    } else if (isOnline) {
+        markerColor = '#10b981'; // Green for online
+        markerIcon = 'bi-broadcast-pin';
+        statusText = 'Online';
+        statusClass = 'success';
+    } else {
+        markerColor = '#6b7280'; // Grey for offline
+        markerIcon = 'bi-wifi-off';
+        statusText = 'Offline';
+        statusClass = 'secondary';
+    }
+
+    // Create custom icon
+    const iconHtml = `
+        <div style="position: relative;">
+            <div style="
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                background: ${markerColor};
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                border: 3px solid white;
+            ">
+                <i class="bi ${markerIcon}" style="color: white; font-size: 18px;"></i>
+            </div>
+            ${isOnline ? `<div style="
+                position: absolute;
+                top: -2px;
+                right: -2px;
+                width: 12px;
+                height: 12px;
+                background: #10b981;
+                border: 2px solid white;
+                border-radius: 50%;
+                animation: pulse 2s infinite;
+            "></div>` : ''}
+        </div>
+    `;
+
+    const customIcon = L.divIcon({
+        html: iconHtml,
+        className: 'custom-rider-marker',
+        iconSize: [40, 40],
+        iconAnchor: [20, 40]
+    });
+
+    // Create marker
+    const marker = L.marker([lat, lng], { icon: customIcon }).addTo(liveMap);
+
+    // Popup content
+    const lastSeen = rider.latest_location ? new Date(rider.latest_location.recorded_at).toLocaleString() : 'N/A';
+    const accuracy = rider.latest_location ? rider.latest_location.accuracy.toFixed(1) : 'N/A';
+    const speed = rider.latest_location && rider.latest_location.speed ? (rider.latest_location.speed * 3.6).toFixed(1) : '0.0';
+
+    const popupContent = `
+        <div style="min-width: 200px;">
+            <h6 class="fw-bold mb-2">${rider.name}</h6>
+            <div class="mb-2">
+                <span class="badge bg-${statusClass}">${statusText}</span>
+            </div>
+            <small class="d-block mb-1">
+                <i class="bi bi-clock text-muted"></i> Last seen: <strong>${lastSeen}</strong>
+            </small>
+            <small class="d-block mb-1">
+                <i class="bi bi-bullseye text-info"></i> Accuracy: <strong>${accuracy}m</strong>
+            </small>
+            <small class="d-block mb-1">
+                <i class="bi bi-speedometer text-warning"></i> Speed: <strong>${speed} km/h</strong>
+            </small>
+            ${hasActiveSession ? `
+                <small class="d-block mb-1">
+                    <i class="bi bi-briefcase text-primary"></i> Session: <strong>${rider.session_duration}</strong>
+                </small>
+            ` : ''}
+            <hr class="my-2">
+            <small class="text-muted">
+                <i class="bi bi-geo-alt"></i> ${lat.toFixed(6)}, ${lng.toFixed(6)}
+            </small>
+        </div>
+    `;
+
+    marker.bindPopup(popupContent);
+    riderMarkers[rider.id] = marker;
+});
+
+// Fit map to show all riders
+if (Object.keys(riderMarkers).length > 0) {
+    const group = L.featureGroup(Object.values(riderMarkers));
+    liveMap.fitBounds(group.getBounds().pad(0.1));
+}
 
 // Auto-refresh every 30 seconds with fade effect
 setTimeout(function() {

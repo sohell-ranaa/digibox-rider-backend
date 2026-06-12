@@ -76,9 +76,16 @@
         border: 2px solid transparent;
         height: 100%;
         display: flex;
-        flex-direction: column !important;
+        flex-direction: column;
         overflow: hidden;
         margin-bottom: 0;
+    }
+
+    /* Desktop: Horizontal layout */
+    @media (min-width: 768px) {
+        .rider-card {
+            flex-direction: row !important;
+        }
     }
 
     @media (hover: hover) and (pointer: fine) {
@@ -94,13 +101,24 @@
         padding: 20px 16px;
         text-align: center;
         border-bottom: 2px solid #e5e7eb;
-        border-right: none !important;
+        border-right: none;
         min-width: auto;
         width: 100%;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
+    }
+
+    /* Desktop: Sidebar layout */
+    @media (min-width: 768px) {
+        .rider-card .card-header-custom {
+            border-bottom: none;
+            border-right: 2px solid #e5e7eb !important;
+            min-width: 180px;
+            width: 180px;
+            padding: 24px 16px;
+        }
     }
 
     .rider-card .rider-avatar {
@@ -119,6 +137,16 @@
         font-weight: 700;
         position: relative;
         flex-shrink: 0;
+    }
+
+    /* Desktop: Larger avatar */
+    @media (min-width: 768px) {
+        .rider-card .rider-avatar {
+            width: 72px;
+            height: 72px;
+            font-size: 1.8rem;
+            margin-bottom: 12px;
+        }
     }
 
     .online-indicator {
@@ -140,6 +168,14 @@
     .online-indicator.offline {
         background: #9ca3af;
         animation: none;
+    }
+
+    /* Desktop: Larger online indicator */
+    @media (min-width: 768px) {
+        .online-indicator {
+            width: 18px;
+            height: 18px;
+        }
     }
 
     @keyframes pulse {
@@ -168,6 +204,17 @@
         word-break: break-word;
     }
 
+    /* Desktop: Larger text in cards */
+    @media (min-width: 768px) {
+        .rider-card .rider-name {
+            font-size: 1.1rem;
+        }
+
+        .rider-card .rider-username {
+            font-size: 0.85rem;
+        }
+    }
+
     .rider-card .card-body {
         padding: 18px 16px;
         flex: 1;
@@ -181,6 +228,25 @@
         grid-template-columns: repeat(2, 1fr);
         gap: 12px;
         margin-bottom: auto;
+    }
+
+    /* Desktop: Better spacing and layout */
+    @media (min-width: 768px) {
+        .rider-card .card-body {
+            padding: 20px 24px;
+        }
+
+        .rider-info-grid {
+            gap: 16px 20px;
+        }
+    }
+
+    /* Large Desktop: 4 columns for info items */
+    @media (min-width: 1200px) {
+        .rider-info-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px 24px;
+        }
     }
 
     .rider-info-item {
@@ -217,6 +283,21 @@
         line-height: 1.3;
     }
 
+    /* Desktop: Larger info text */
+    @media (min-width: 768px) {
+        .rider-info-item .label {
+            font-size: 0.75rem;
+        }
+
+        .rider-info-item .label i {
+            font-size: 0.8rem;
+        }
+
+        .rider-info-item .value {
+            font-size: 0.95rem;
+        }
+    }
+
     .action-buttons {
         margin-top: 14px;
         padding-top: 14px;
@@ -234,6 +315,19 @@
         align-items: center;
         justify-content: center;
         gap: 6px;
+    }
+
+    /* Desktop: Better spacing and sizing */
+    @media (min-width: 768px) {
+        .action-buttons {
+            margin-top: 18px;
+            padding-top: 18px;
+        }
+
+        .btn-action {
+            padding: 12px 24px;
+            font-size: 0.9rem;
+        }
     }
 
     @media (hover: hover) and (pointer: fine) {
@@ -351,7 +445,7 @@
         font-style: italic;
     }
 
-    /* Additional Mobile Responsive Styles */
+    /* Additional Tablet Responsive Styles */
     @media (max-width: 991px) {
         .search-section {
             padding: 16px;
@@ -362,14 +456,22 @@
         .stats-card h3 {
             font-size: 1.75rem;
         }
+    }
 
-        /* Force column layout */
+    /* Force column layout on mobile/tablet only */
+    @media (max-width: 767px) {
         .rider-card {
             flex-direction: column !important;
         }
         .rider-card .card-header-custom {
             border-right: none !important;
             border-bottom: 2px solid #e5e7eb !important;
+            width: 100% !important;
+            min-width: 100% !important;
+            max-width: 100% !important;
+            padding: 20px 16px !important;
+        }
+        .rider-card .card-body {
             width: 100% !important;
         }
         .rider-card .rider-avatar {
@@ -380,6 +482,12 @@
         .online-indicator {
             width: 14px;
             height: 14px;
+        }
+        .rider-card .rider-name {
+            font-size: 1rem !important;
+        }
+        .rider-card .rider-username {
+            font-size: 0.8rem !important;
         }
     }
 
@@ -434,42 +542,52 @@
             font-size: 20px;
         }
 
-        /* Rider Cards - Tablet */
+        /* Rider Cards - Mobile */
         .rider-card {
             flex-direction: column !important;
-            width: 100%;
         }
         .rider-card .card-body {
-            padding: 16px;
-            width: 100%;
+            padding: 16px !important;
+            width: 100% !important;
         }
         .rider-card .card-header-custom {
-            padding: 16px;
+            padding: 16px !important;
+            width: 100% !important;
+            min-width: 100% !important;
             border-right: none !important;
-            border-bottom: 2px solid #e5e7eb;
-            width: 100%;
+            border-bottom: 2px solid #e5e7eb !important;
         }
         .rider-card .rider-avatar {
-            width: 54px;
-            height: 54px;
-            font-size: 1.25rem;
+            width: 54px !important;
+            height: 54px !important;
+            font-size: 1.25rem !important;
+        }
+        .rider-card .rider-name {
+            font-size: 0.95rem !important;
+        }
+        .rider-card .rider-username {
+            font-size: 0.75rem !important;
         }
         .rider-info-grid {
             gap: 10px;
             grid-template-columns: repeat(2, 1fr) !important;
         }
         .rider-info-item .label {
-            font-size: 0.65rem;
+            font-size: 0.65rem !important;
         }
         .rider-info-item .label i {
-            font-size: 0.7rem;
+            font-size: 0.7rem !important;
         }
         .rider-info-item .value {
-            font-size: 0.8rem;
+            font-size: 0.8rem !important;
         }
         .btn-action {
             padding: 10px 16px;
             font-size: 0.875rem;
+        }
+        .online-indicator {
+            width: 14px !important;
+            height: 14px !important;
         }
     }
 
@@ -523,15 +641,17 @@
             display: flex !important;
         }
         .rider-card .card-header-custom {
-            padding: 14px 12px;
+            padding: 14px 12px !important;
             border-right: none !important;
             border-bottom: 2px solid #e5e7eb !important;
             width: 100% !important;
+            min-width: 100% !important;
+            max-width: 100% !important;
             flex-direction: column !important;
         }
         .rider-card .card-body {
-            padding: 14px 12px;
-            width: 100%;
+            padding: 14px 12px !important;
+            width: 100% !important;
             flex: 1;
         }
         .rider-card .rider-avatar {
@@ -627,45 +747,54 @@
             flex-direction: column !important;
         }
         .rider-card .card-header-custom {
-            padding: 12px 10px;
+            padding: 12px 10px !important;
             border-right: none !important;
             border-bottom: 2px solid #e5e7eb !important;
             width: 100% !important;
+            min-width: 100% !important;
+            max-width: 100% !important;
         }
         .rider-card .card-body {
-            padding: 12px 10px;
-            width: 100%;
+            padding: 12px 10px !important;
+            width: 100% !important;
         }
         .rider-card .rider-avatar {
-            width: 46px;
-            height: 46px;
-            font-size: 1.05rem;
+            width: 46px !important;
+            height: 46px !important;
+            font-size: 1.05rem !important;
             margin: 0 auto 6px auto !important;
         }
         .rider-card .rider-name {
-            font-size: 0.875rem;
+            font-size: 0.875rem !important;
         }
         .rider-card .rider-username {
-            font-size: 0.7rem;
+            font-size: 0.7rem !important;
         }
         .rider-info-grid {
             grid-template-columns: 1fr 1fr !important;
-            gap: 8px;
+            gap: 8px !important;
         }
         .rider-info-item .label {
-            font-size: 0.58rem;
+            font-size: 0.58rem !important;
+        }
+        .rider-info-item .label i {
+            font-size: 0.6rem !important;
         }
         .rider-info-item .value {
-            font-size: 0.75rem;
+            font-size: 0.75rem !important;
         }
         .btn-action {
-            padding: 10px 14px;
-            font-size: 0.825rem;
+            padding: 10px 14px !important;
+            font-size: 0.825rem !important;
+        }
+        .online-indicator {
+            width: 12px !important;
+            height: 12px !important;
         }
     }
 
-    /* Universal mobile card fix */
-    @media (max-width: 768px) {
+    /* Universal mobile card fix - mobile and tablet only */
+    @media (max-width: 767px) {
         .rider-card {
             flex-direction: column !important;
             max-width: 100%;
@@ -673,7 +802,12 @@
         .rider-card .card-header-custom {
             border-right: 0 !important;
             border-bottom: 2px solid #e5e7eb !important;
+            width: 100% !important;
             min-width: 100% !important;
+            max-width: 100% !important;
+        }
+        .rider-card .card-body {
+            width: 100% !important;
         }
     }
 </style>
@@ -773,7 +907,7 @@
             <div class="stats-card">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <p class="text-muted mb-1 small">On Duty</p>
+                        <p class="text-muted mb-1 small">Working</p>
                         <h3 class="mb-0 fw-bold">{{ $riders->where('is_on_duty', true)->count() }}</h3>
                     </div>
                     <div class="icon-wrapper" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white;">
@@ -811,9 +945,9 @@
             </div>
             <div class="col-6 col-md-4 col-lg-3">
                 <select class="form-select border-0 bg-light" id="dutyFilter">
-                    <option value="">Duty Status</option>
-                    <option value="on-duty">On Duty</option>
-                    <option value="off-duty">Off Duty</option>
+                    <option value="">Work Status</option>
+                    <option value="on-duty">Working</option>
+                    <option value="off-duty">Not Working</option>
                 </select>
             </div>
             <div class="col-6 col-md-12 col-lg-3">

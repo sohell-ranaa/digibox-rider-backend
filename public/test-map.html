@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Map Test - Malaysia Route</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+        #map { height: 600px; width: 100%; border: 2px solid #333; }
+        #info { margin-bottom: 10px; padding: 10px; background: #f0f0f0; }
+        .status { font-weight: bold; color: green; }
+        .error { font-weight: bold; color: red; }
+    </style>
+</head>
+<body>
+    <h1>🗺️ Simple Map Test - Malaysia GPS Data</h1>
+    <div id="info">
+        <div id="status">Loading...</div>
+    </div>
+    <div id="map"></div>
+
+    <script>
+        console.log('=================================================');
+        console.log('🧪 MAP TEST STARTING');
+        console.log('=================================================');
+
+        // Initialize map centered on Kuala Lumpur
+        const map = L.map('map').setView([3.1480, 101.6990], 13);
+        console.log('✅ Map initialized');
+
+        // Add tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        console.log('✅ Tile layer added');
+
+        // Update status
+        document.getElementById('status').innerHTML = '<span class="status">Map loaded. Fetching GPS data...</span>';
+
+        // Fetch data from API
+        const today = new Date().toISOString().split('T')[0];
+        const url = `/tracking/historical?rider_id=1&start_date=${today}&end_date=${today}`;
+        console.log('📡 Fetching:', url);
+
+        fetch(url)
+            .then(response => {
+                console.log('📡 Response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('📦 Data received:', data);
+                console.log('   - Sessions:', data.sessions?.length);
+                console.log('   - Locations:', data.locations?.length);
+                console.log('   - AI Processing:', data.ai_processing);
+
+                const locations = data.locations || [];
+
+                if (locations.length === 0) {
+                    document.getElementById('status').innerHTML = '<span class="error">❌ No GPS data found for today</span>';
+                    console.error('❌ No locations in response');
+                    return;
+                }
+
+                document.getElementById('status').innerHTML =
+                    `<span class="status">✅ Loaded ${locations.length} GPS points. Drawing route...</span>`;
+
+                // TEST 1: Draw simple red polyline
+                console.log('🎨 TEST 1: Drawing simple polyline');
+                const coords = locations.map(loc => [loc.latitude, loc.longitude]);
+                console.log('   - Coordinates:', coords.length);
+                console.log('   - First 3:', coords.slice(0, 3));
+                console.log('   - Last 3:', coords.slice(-3));
+
+                const polyline = L.polyline(coords, {
+                    color: '#FF0000',
+                    weight: 6,
+                    opacity: 0.8
+                }).addTo(map);
+
+                console.log('✅ Polyline added');
+                console.log('   - Bounds:', polyline.getBounds());
+
+                // TEST 2: Add start marker
+                const startMarker = L.marker([locations[0].latitude, locations[0].longitude])
+                    .bindPopup('🟢 START: Simfoni Tower')
+                    .addTo(map);
+                console.log('✅ Start marker added');
+
+                // TEST 3: Add end marker
+                const endMarker = L.marker([
+                    locations[locations.length - 1].latitude,
+                    locations[locations.length - 1].longitude
+                ])
+                    .bindPopup('🔴 END')
+                    .addTo(map);
+                console.log('✅ End marker added');
+
+                // Fit map to route
+                map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
+                console.log('✅ Map fitted to bounds');
+
+                // TEST 4: Add colored segments
+                console.log('🎨 TEST 2: Drawing colored segments by speed');
+                let segments = [];
+                let currentSegment = {
+                    color: getColorForSpeed(locations[0].speed),
+                    points: [locations[0]]
+                };
+
+                for (let i = 1; i < locations.length; i++) {
+                    const color = getColorForSpeed(locations[i].speed);
+                    if (color !== currentSegment.color) {
+                        segments.push(currentSegment);
+                        currentSegment = { color: color, points: [locations[i]] };
+                    } else {
+                        currentSegment.points.push(locations[i]);
+                    }
+                }
+                segments.push(currentSegment);
+
+                console.log(`   - Created ${segments.length} colored segments`);
+
+                segments.forEach((seg, i) => {
+                    const segCoords = seg.points.map(p => [p.latitude, p.longitude]);
+                    L.polyline(segCoords, {
+                        color: seg.color,
+                        weight: 4,
+                        opacity: 0.7
+                    }).addTo(map);
+                    console.log(`   - Segment ${i}: ${seg.color}, ${segCoords.length} points`);
+                });
+
+                document.getElementById('status').innerHTML =
+                    `<span class="status">✅ SUCCESS! Rendered ${locations.length} points in ${segments.length} colored segments</span>`;
+
+                console.log('=================================================');
+                console.log('✅ TEST COMPLETE');
+                console.log('=================================================');
+            })
+            .catch(error => {
+                console.error('❌ Error:', error);
+                document.getElementById('status').innerHTML =
+                    `<span class="error">❌ Error: ${error.message}</span>`;
+            });
+
+        function getColorForSpeed(speedMps) {
+            const speedKmh = (speedMps || 0) * 3.6;
+            if (speedKmh < 2) return '#DC2626';      // Red - Stopped
+            if (speedKmh < 10) return '#F59E0B';     // Amber - Slow
+            if (speedKmh < 30) return '#10B981';     // Green - Normal
+            if (speedKmh < 60) return '#3B82F6';     // Blue - Fast
+            return '#8B5CF6';                         // Purple - Highway
+        }
+    </script>
+</body>
+</html>

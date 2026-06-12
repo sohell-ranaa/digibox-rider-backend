@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Models\Rider;
 use App\Models\DutySession;
-use App\Models\LocationPoint;
 use App\Models\StopRecord;
 use App\Models\InstallationLocation;
 use App\Models\InstallationVisit;
@@ -26,11 +25,19 @@ class DashboardController extends Controller
         // Total active riders in system
         $totalRiders = Rider::where('is_active', true)->count();
 
-        // Riders currently on duty RIGHT NOW
-        $activeRiders = DutySession::where('status', 'active')->count();
+        // Riders currently online RIGHT NOW (with location data in last 10 min)
+        $onlineRiderIds = DB::table('location_batches')
+            ->where('batch_end_time', '>=', Carbon::now()->subMinutes(10))
+            ->distinct('rider_id')
+            ->pluck('rider_id');
+        $onlineRiders = Rider::where('is_active', true)
+            ->whereIn('id', $onlineRiderIds)
+            ->count();
 
-        // Today's location points recorded
-        $todayLocations = LocationPoint::whereDate('recorded_at', $today)->count();
+        // Today's location points recorded (sum point_count from batches)
+        $todayLocations = DB::table('location_batches')
+            ->whereDate('batch_start_time', $today)
+            ->sum('point_count');
 
         // Total installations in system
         $totalInstallations = InstallationLocation::where('is_active', true)->count();
@@ -59,40 +66,73 @@ class DashboardController extends Controller
         $todayDistance = round($todayDistance, 2);
 
         // =====================================================
-        // SECTION 3: REAL-TIME ACTIVE SESSIONS
+        // SECTION 3: REAL-TIME ONLINE RIDERS & LIVE MAP
         // =====================================================
 
-        $activeSessions = DutySession::with('rider')
-            ->where('status', 'active')
-            ->orderBy('started_at', 'desc')
+        // Get all riders with their latest location and online status
+        $allRidersWithLocation = Rider::where('is_active', true)
+            ->with(['locationPoints' => function($q) {
+                $q->latest('recorded_at')->limit(1);
+            }])
+            ->with(['dutySessions' => function($q) {
+                $q->where('status', 'active')->latest('started_at')->limit(1);
+            }])
             ->get()
-            ->map(function($session) use ($now) {
-                // Calculate current duration
-                $duration = $session->started_at->diff($now);
-                $session->current_duration = sprintf(
-                    '%02d:%02d:%02d',
-                    $duration->h + ($duration->days * 24),
-                    $duration->i,
-                    $duration->s
-                );
+            ->map(function($rider) use ($now) {
+                $latestLocation = $rider->locationPoints->first();
+                $activeSession = $rider->dutySessions->first();
 
-                // Get latest location for this session
-                $session->latest_location = LocationPoint::where('duty_session_id', $session->id)
-                    ->orderBy('recorded_at', 'desc')
-                    ->first();
+                // Determine if truly online (location data in last 10 min)
+                $isOnline = $latestLocation && $latestLocation->recorded_at->diffInMinutes($now) < 10;
 
-                return $session;
+                $rider->is_currently_online = $isOnline;
+                $rider->latest_location = $latestLocation;
+                $rider->active_session = $activeSession;
+
+                if ($activeSession) {
+                    $duration = $activeSession->started_at->diff($now);
+                    $rider->session_duration = sprintf(
+                        '%02d:%02d:%02d',
+                        $duration->h + ($duration->days * 24),
+                        $duration->i,
+                        $duration->s
+                    );
+                }
+
+                return $rider;
             });
+
+        // Filter for online riders only (for the active riders list)
+        $onlineRidersList = $allRidersWithLocation->filter(function($rider) {
+            return $rider->is_currently_online;
+        })->sortByDesc(function($rider) {
+            return $rider->latest_location ? $rider->latest_location->recorded_at : null;
+        })->values();
 
         // =====================================================
         // SECTION 4: RECENT ACTIVITY (Last 15 minutes)
         // =====================================================
 
-        $recentActivity = LocationPoint::with(['rider', 'dutySession'])
-            ->where('recorded_at', '>=', $now->copy()->subMinutes(15))
-            ->orderBy('recorded_at', 'desc')
+        // Get recent batches from last 15 minutes
+        $recentBatches = DB::table('location_batches')
+            ->join('riders', 'location_batches.rider_id', '=', 'riders.id')
+            ->join('duty_sessions', 'location_batches.duty_session_id', '=', 'duty_sessions.id')
+            ->where('location_batches.batch_end_time', '>=', $now->copy()->subMinutes(15))
+            ->orderBy('location_batches.batch_end_time', 'desc')
             ->take(20)
+            ->select('location_batches.*', 'riders.name as rider_name', 'duty_sessions.started_at')
             ->get();
+
+        // Convert to collection format for view compatibility
+        $recentActivity = $recentBatches->map(function($batch) {
+            $points = json_decode($batch->points, true);
+            $lastPoint = end($points);
+            return (object)[
+                'rider' => (object)['name' => $batch->rider_name],
+                'dutySession' => (object)['started_at' => Carbon::parse($batch->started_at)],
+                'recorded_at' => Carbon::parse(substr($batch->batch_end_time, 0, 10) . ' ' . $lastPoint['ts']),
+            ];
+        });
 
         // =====================================================
         // SECTION 5: THIS WEEK'S TREND (7 days chart)
@@ -113,8 +153,10 @@ class DashboardController extends Controller
             // Visits per day
             $weekVisits[] = InstallationVisit::whereDate('arrived_at', $date)->count();
 
-            // Locations per day
-            $weekLocations[] = LocationPoint::whereDate('recorded_at', $date)->count();
+            // Locations per day (sum point counts from batches)
+            $weekLocations[] = DB::table('location_batches')
+                ->whereDate('batch_start_time', $date)
+                ->sum('point_count') ?: 0;
         }
 
         // =====================================================
@@ -153,9 +195,11 @@ class DashboardController extends Controller
 
         $hourlyActivity = [];
         for ($hour = 0; $hour < 24; $hour++) {
-            $hourlyActivity[] = LocationPoint::whereDate('recorded_at', $today)
-                ->whereRaw('HOUR(recorded_at) = ?', [$hour])
-                ->count();
+            $count = DB::table('location_batches')
+                ->whereDate('batch_start_time', $today)
+                ->whereRaw('HOUR(batch_start_time) = ?', [$hour])
+                ->sum('point_count');
+            $hourlyActivity[] = $count ?: 0;
         }
 
         // =====================================================
@@ -195,10 +239,29 @@ class DashboardController extends Controller
             ? round((($thisMonthVisits - $lastMonthVisits) / $lastMonthVisits) * 100, 1)
             : 0;
 
+        // =====================================================
+        // SECTION 10: GPS TRACKING QUALITY METRICS
+        // =====================================================
+
+        // Average GPS accuracy today (lower is better) - weighted average from batches
+        $todayAvgAccuracy = DB::table('location_batches')
+            ->whereDate('batch_start_time', $today)
+            ->avg('avg_accuracy');
+        $todayAvgAccuracy = $todayAvgAccuracy ? round($todayAvgAccuracy, 1) : 0;
+
+        // For high accuracy count, we approximate based on batches with good avg accuracy
+        $todayHighAccuracyCount = DB::table('location_batches')
+            ->whereDate('batch_start_time', $today)
+            ->where('avg_accuracy', '<', 20)
+            ->sum('point_count') ?: 0;
+        $todayHighAccuracyPercent = $todayLocations > 0
+            ? round(($todayHighAccuracyCount / $todayLocations) * 100, 1)
+            : 0;
+
         return view('dashboard.index', compact(
             // Key Metrics
             'totalRiders',
-            'activeRiders',
+            'onlineRiders',
             'todayLocations',
             'totalInstallations',
 
@@ -210,7 +273,8 @@ class DashboardController extends Controller
             'todayDistance',
 
             // Real-time Data
-            'activeSessions',
+            'onlineRidersList',
+            'allRidersWithLocation',
             'recentActivity',
 
             // Charts
@@ -233,7 +297,11 @@ class DashboardController extends Controller
             'sessionsChange',
             'thisMonthVisits',
             'lastMonthVisits',
-            'visitsChange'
+            'visitsChange',
+
+            // GPS Quality
+            'todayAvgAccuracy',
+            'todayHighAccuracyPercent'
         ));
     }
 }

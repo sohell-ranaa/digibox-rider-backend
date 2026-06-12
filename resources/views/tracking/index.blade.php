@@ -139,11 +139,77 @@
         background: #1e40af;
     }
 
+    /* Session Card Styles */
+    .session-card {
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        transition: all 0.3s;
+    }
+
+    .session-card:hover {
+        border-color: var(--digibox-blue);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+    }
+
+    .session-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 16px;
+        border-bottom: 2px solid #f3f4f6;
+        margin-bottom: 16px;
+    }
+
+    .session-time-range {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .session-duration-badge {
+        background: linear-gradient(135deg, var(--digibox-blue), #1e40af);
+        color: white;
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .session-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .session-stat {
+        background: var(--gray-50);
+        padding: 12px;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .session-stat-label {
+        font-size: 0.7rem;
+        color: var(--gray-600);
+        text-transform: uppercase;
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
+    .session-stat-value {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--digibox-blue);
+    }
+
     .timeline-item {
         position: relative;
-        padding-left: 40px;
-        padding-bottom: 24px;
-        cursor: pointer;
+        padding-left: 50px;
+        padding-bottom: 20px;
         transition: all 0.2s;
     }
 
@@ -151,7 +217,7 @@
         background: var(--gray-50);
         margin-left: -16px;
         margin-right: -16px;
-        padding-left: 56px;
+        padding-left: 66px;
         padding-right: 16px;
         border-radius: 8px;
     }
@@ -159,11 +225,11 @@
     .timeline-item::before {
         content: '';
         position: absolute;
-        left: 14px;
-        top: 32px;
+        left: 18px;
+        top: 40px;
         bottom: -8px;
-        width: 2px;
-        background: #e5e7eb;
+        width: 3px;
+        background: linear-gradient(180deg, #e5e7eb 0%, transparent 100%);
     }
 
     .timeline-item:last-child::before {
@@ -173,53 +239,89 @@
     .timeline-dot {
         position: absolute;
         left: 0;
-        top: 8px;
-        width: 30px;
-        height: 30px;
+        top: 4px;
+        width: 38px;
+        height: 38px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
-        font-size: 14px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        font-size: 16px;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.15);
         z-index: 2;
     }
 
-    .timeline-dot.start { background: var(--success-green); }
-    .timeline-dot.stop { background: var(--warning-orange); }
-    .timeline-dot.visit { background: var(--danger-red); }
-    .timeline-dot.end { background: var(--gray-600); }
+    .timeline-dot.start { background: linear-gradient(135deg, #10b981, #059669); }
+    .timeline-dot.stop { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .timeline-dot.visit { background: linear-gradient(135deg, #ef4444, #dc2626); }
+    .timeline-dot.end { background: linear-gradient(135deg, #6b7280, #4b5563); }
     .timeline-dot.offline { background: #64748b; border: 3px dashed white; }
 
+    .timeline-content {
+        background: white;
+        padding: 12px;
+        border-radius: 8px;
+        border-left: 3px solid #e5e7eb;
+    }
+
     .timeline-time {
-        font-size: 0.75rem;
-        color: var(--gray-600);
-        font-weight: 600;
-        margin-bottom: 4px;
+        font-size: 0.875rem;
+        color: var(--digibox-blue);
+        font-weight: 700;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .timeline-time i {
+        font-size: 1rem;
     }
 
     .timeline-title {
         font-weight: 700;
+        font-size: 1rem;
         color: #111827;
-        margin-bottom: 4px;
+        margin-bottom: 6px;
     }
 
-    .timeline-duration {
-        display: inline-block;
-        background: var(--warning-orange);
-        color: white;
-        padding: 2px 8px;
-        border-radius: 12px;
+    .timeline-meta {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+    }
+
+    .timeline-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: var(--gray-100);
+        color: var(--gray-600);
+        padding: 4px 10px;
+        border-radius: 16px;
         font-size: 0.75rem;
         font-weight: 600;
-        margin-top: 4px;
+    }
+
+    .timeline-badge.duration {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .timeline-badge.location {
+        background: #dbeafe;
+        color: #1e40af;
     }
 
     .timeline-location {
         font-size: 0.875rem;
         color: var(--gray-600);
-        margin-top: 4px;
+        margin-top: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
     }
 
     /* Controls */
@@ -362,16 +464,49 @@
                             <div class="d-flex gap-3 flex-wrap" style="font-size: 0.75rem;">
                                 <div class="d-flex align-items-center gap-1">
                                     <div style="width: 16px; height: 16px; background: #10b981; border-radius: 50%; border: 2px solid white;"></div>
-                                    <span class="text-muted">On Duty</span>
+                                    <span class="text-muted">Online</span>
                                 </div>
                                 <div class="d-flex align-items-center gap-1">
                                     <div style="width: 16px; height: 16px; background: #6b7280; border-radius: 50%; border: 2px solid white;"></div>
-                                    <span class="text-muted">Off Duty</span>
+                                    <span class="text-muted">Offline</span>
                                 </div>
                                 <div class="d-flex align-items-center gap-1">
                                     <div style="width: 16px; height: 16px; background: #ef4444; border-radius: 4px; border: 2px solid white;"></div>
                                     <span class="text-muted">Installation Location</span>
                                 </div>
+                            </div>
+
+                            <!-- AI-Powered Speed Color Legend -->
+                            <div class="mt-2 pt-2 border-top">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <i class="bi bi-stars text-purple" style="color: #8B5CF6;"></i>
+                                    <small class="text-muted fw-semibold">AI-Powered Route Colors:</small>
+                                </div>
+                                <div class="d-flex gap-3 flex-wrap" style="font-size: 0.7rem;">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div style="width: 20px; height: 4px; background: #DC2626; border-radius: 2px; box-shadow: 0 1px 3px rgba(220,38,38,0.4);"></div>
+                                        <span class="text-muted">Stopped</span>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div style="width: 20px; height: 4px; background: #F59E0B; border-radius: 2px; box-shadow: 0 1px 3px rgba(245,158,11,0.4);"></div>
+                                        <span class="text-muted">Slow</span>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div style="width: 20px; height: 4px; background: #10B981; border-radius: 2px; box-shadow: 0 1px 3px rgba(16,185,129,0.4);"></div>
+                                        <span class="text-muted">Normal</span>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div style="width: 20px; height: 4px; background: #3B82F6; border-radius: 2px; box-shadow: 0 1px 3px rgba(59,130,246,0.4);"></div>
+                                        <span class="text-muted">Fast</span>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div style="width: 20px; height: 4px; background: #8B5CF6; border-radius: 2px; box-shadow: 0 1px 3px rgba(139,92,246,0.4);"></div>
+                                        <span class="text-muted">Highway</span>
+                                    </div>
+                                </div>
+                                <small class="text-muted d-block mt-2" style="font-size: 0.65rem;">
+                                    <i class="bi bi-check-circle-fill text-success"></i> GPS data processed with AI filtering & Kalman smoothing
+                                </small>
                             </div>
                         </div>
                     </div>
@@ -547,6 +682,14 @@
         iconAnchor: [17, 17]
     });
 
+    // Installation icon (unvisited)
+    const installationIcon = L.divIcon({
+        html: '<div style="background: #8B5CF6; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.2); opacity: 0.8;"><i class="bi bi-building" style="font-size: 14px;"></i></div>',
+        className: '',
+        iconSize: [32, 32],
+        iconAnchor: [16, 16]
+    });
+
     const offlineIcon = L.divIcon({
         html: '<div style="background: #64748b; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; border: 3px dashed white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"><i class="bi bi-wifi-off" style="font-size: 14px;"></i></div>',
         className: '',
@@ -711,7 +854,7 @@
                 bounds.push([lat, lng]);
 
                 // Create custom icon with username label
-                const iconColor = rider.is_on_duty ? '#10b981' : '#6b7280';
+                const iconColor = rider.is_online ? '#10b981' : '#6b7280';
                 const iconHtml = `
                     <div style="display: flex; flex-direction: column; align-items: center;">
                         <div style="background: ${iconColor}; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; border: 3px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.4);">
@@ -735,17 +878,17 @@
                 // Create popup with rider info
                 const popupContent = `
                     <div style="min-width: 200px;">
-                        <h6 class="fw-bold mb-2" style="color: ${rider.is_on_duty ? '#10b981' : '#6b7280'};">
+                        <h6 class="fw-bold mb-2" style="color: ${rider.is_online ? '#10b981' : '#6b7280'};">
                             <i class="bi bi-person-circle"></i> ${rider.name}
                         </h6>
                         <div style="font-size: 0.875rem;">
                             <div class="mb-1">
-                                <strong>Status:</strong>
-                                <span class="badge ${rider.is_on_duty ? 'bg-success' : 'bg-secondary'}">${rider.status}</span>
+                                <strong>Connection:</strong>
+                                <span class="badge ${rider.is_online ? 'bg-success' : 'bg-secondary'}">${rider.status}</span>
                             </div>
                             ${rider.is_on_duty ? `
                             <div class="mb-1">
-                                <strong>Started:</strong> ${rider.duty_started_at}
+                                <strong>Started Working:</strong> ${rider.duty_started_at}
                             </div>
                             <div class="mb-1">
                                 <strong>Duration:</strong> ${rider.duty_duration}
@@ -833,7 +976,7 @@
             liveMap.removeLayer(liveMarkersLayer);
         }
 
-        const { locations, stops, visits, sessions } = data;
+        const { locations, stops, visits, sessions, installations } = data;
 
         if (!locations || locations.length === 0) {
             alert(`No tracking data found for ${riderName} today`);
@@ -854,35 +997,64 @@
             L.marker([locations[0].latitude, locations[0].longitude], { icon: startIcon })
                 .bindPopup(`
                     <div style="padding: 8px;">
-                        <h6 class="fw-bold text-success mb-2"><i class="bi bi-play-circle-fill"></i> Started Duty</h6>
+                        <h6 class="fw-bold text-success mb-2"><i class="bi bi-play-circle-fill"></i> Start Location</h6>
                         <p class="mb-0 small">${locations[0].recorded_at_human}</p>
                     </div>
                 `)
                 .addTo(liveRouteLayer);
         }
 
-        // Add end marker (if duty ended)
-        if (sessions && sessions[0] && sessions[0].ended_at) {
+        // Add last seen marker (current/last location)
+        if (locations && locations.length > 0) {
             const lastLocation = locations[locations.length - 1];
+            const isOnline = sessions && sessions[0] && sessions[0].status === 'active';
+            const statusColor = isOnline ? 'primary' : 'secondary';
+            const statusIcon = isOnline ? 'geo-alt-fill' : 'clock-history';
+            const statusText = isOnline ? 'Current Location' : 'Last Seen';
+
             L.marker([lastLocation.latitude, lastLocation.longitude], { icon: endIcon })
                 .bindPopup(`
                     <div style="padding: 8px;">
-                        <h6 class="fw-bold text-secondary mb-2"><i class="bi bi-stop-circle-fill"></i> Ended Duty</h6>
-                        <p class="mb-0 small">${lastLocation.recorded_at_human}</p>
+                        <h6 class="fw-bold text-${statusColor} mb-2">
+                            <i class="bi bi-${statusIcon}"></i> ${statusText}
+                        </h6>
+                        <p class="mb-1 small"><strong>Time:</strong> ${lastLocation.recorded_at_human}</p>
+                        <p class="mb-0 small text-muted">${lastLocation.latitude.toFixed(6)}, ${lastLocation.longitude.toFixed(6)}</p>
                     </div>
                 `)
                 .addTo(liveRouteLayer);
         }
 
-        // Add visit markers
+        // Add visit markers (visited - RED)
+        const visitedIds = new Set();
         if (visits && visits.length > 0) {
             visits.forEach(visit => {
+                visitedIds.add(visit.installation_location_id || visit.id);
                 L.marker([visit.latitude, visit.longitude], { icon: visitIcon })
                     .bindPopup(`
                         <div style="padding: 8px;">
-                            <h6 class="fw-bold text-danger mb-2"><i class="bi bi-building"></i> Installation Visit</h6>
+                            <h6 class="fw-bold text-danger mb-2"><i class="bi bi-check-circle-fill"></i> Visited Installation</h6>
                             <p class="mb-1 small"><strong>${visit.installation_name}</strong></p>
                             <p class="mb-0 small">Duration: ${visit.duration_minutes || 'In progress'} min</p>
+                        </div>
+                    `)
+                    .addTo(liveRouteLayer);
+            });
+        }
+
+        // Add all installation markers (unvisited - PURPLE)
+        if (installations && installations.length > 0) {
+            installations.forEach(installation => {
+                // Skip if already visited
+                if (visitedIds.has(installation.id)) return;
+
+                L.marker([installation.latitude, installation.longitude], { icon: installationIcon })
+                    .bindPopup(`
+                        <div style="padding: 8px;">
+                            <h6 class="fw-bold text-purple mb-2"><i class="bi bi-building"></i> Installation Location</h6>
+                            <p class="mb-1 small"><strong>${installation.name}</strong></p>
+                            <p class="mb-0 small text-muted">${installation.address || ''}</p>
+                            <p class="mb-0 mt-1"><span class="badge bg-secondary">Not Visited</span></p>
                         </div>
                     `)
                     .addTo(liveRouteLayer);
@@ -910,31 +1082,64 @@
         }
     }
 
-    // AI-based route building for live map (same as history map)
+    // AI-enhanced live map route with intelligent filtering
     async function buildRealisticRouteOnLiveMap(locations, layer) {
-        const allRouteCoordinates = [];
+        console.log('=================================================');
+        console.log('🎨 LIVE MAP - BUILDING ROUTE');
+        console.log('=================================================');
+        console.log('Total locations:', locations.length);
 
-        for (let i = 0; i < locations.length - 1; i++) {
-            const from = locations[i];
-            const to = locations[i + 1];
+        if (!locations || locations.length === 0) {
+            console.error('❌ No locations to render on live map');
+            return;
+        }
 
-            const segment = await fetchRoadRoute(from, to);
+        // SIMPLE TEST: Draw basic polyline first
+        const allCoords = locations.map(loc => [loc.latitude, loc.longitude]);
+        console.log('Drawing test polyline with', allCoords.length, 'points');
 
-            if (segment && segment.length > 0) {
-                allRouteCoordinates.push(...segment);
+        const testLine = L.polyline(allCoords, {
+            color: '#FF0000',
+            weight: 8,
+            opacity: 0.9
+        }).addTo(layer);
+        console.log('✅ Test polyline added');
+
+        // Draw colored segments
+        const segments = groupByMovementState(locations);
+        console.log('✓ Created', segments.length, 'segments');
+
+        segments.forEach((segment, i) => {
+            if (segment.points.length < 1) return;
+
+            const coords = segment.points.map(p => [p.latitude, p.longitude]);
+
+            if (segment.type === 'stopped' && segment.points.length <= 3) {
+                const centerLat = segment.points.reduce((sum, p) => sum + p.latitude, 0) / segment.points.length;
+                const centerLng = segment.points.reduce((sum, p) => sum + p.longitude, 0) / segment.points.length;
+
+                L.circle([centerLat, centerLng], {
+                    radius: 15,
+                    color: '#ef4444',
+                    fillColor: '#ef4444',
+                    fillOpacity: 0.3,
+                    weight: 2
+                }).addTo(layer);
             } else {
-                const interpolated = interpolatePoints(from, to, 10);
-                allRouteCoordinates.push(...interpolated);
+                L.polyline(coords, {
+                    color: segment.color,
+                    weight: segment.type === 'stopped' ? 4 : 5,
+                    opacity: segment.type === 'stopped' ? 0.6 : 0.8,
+                    smoothFactor: 1.0,
+                    lineCap: 'round',
+                    lineJoin: 'round',
+                    dashArray: segment.type === 'stopped' ? '5, 10' : null
+                }).addTo(layer);
             }
-        }
+        });
 
-        if (allRouteCoordinates.length > 0) {
-            L.polyline(allRouteCoordinates, {
-                color: '#2563EB',
-                weight: 5,
-                opacity: 0.8
-            }).addTo(layer);
-        }
+        console.log('✅ Route rendered on live map');
+        console.log('=================================================');
     }
 
     // Back to all riders view
@@ -1008,100 +1213,238 @@
         const totalMinutes = sessions.reduce((sum, s) => sum + (s.duration_minutes || 0), 0);
         const totalHours = Math.floor(totalMinutes / 60);
         const remainingMinutes = totalMinutes % 60;
-        const standardHours = sessions.length * 8; // Assuming 8 hours standard
-        const overtime = Math.max(0, totalHours - standardHours);
 
         // Show work summary
         document.getElementById('workSummary').style.display = 'block';
         document.getElementById('workSummary').innerHTML = `
             <div class="work-summary-item">
-                <strong>Total Work Time</strong>
+                <strong>Total Duration</strong>
                 <span class="value">${totalHours}h ${remainingMinutes}m</span>
             </div>
             <div class="work-summary-item">
                 <strong>Sessions</strong>
                 <span class="value">${sessions.length}</span>
             </div>
-            ${overtime > 0 ? `
             <div class="work-summary-item">
-                <strong>Overtime</strong>
-                <span class="value overtime">${overtime}h</span>
-            </div>
-            ` : ''}
-            <div class="work-summary-item">
-                <strong>Stops & Breaks</strong>
+                <strong>Activities</strong>
                 <span class="value">${stops.length + visits.length}</span>
             </div>
         `;
 
-        // Build timeline
+        // Build timeline with session cards
         let timelineHTML = '';
 
-        sessions.forEach(session => {
-            // Start of duty
+        sessions.forEach((session, sessionIndex) => {
+            const sessionStops = stops.filter(s => s.duty_session_id === session.id);
+            const sessionVisits = visits.filter(v => v.duty_session_id === session.id);
+            const sessionLocations = locations.filter(loc => loc.duty_session_id === session.id);
+
+            const startTime = new Date(session.started_at);
+            const endTime = session.ended_at ? new Date(session.ended_at) : new Date();
+            const durationMins = session.duration_minutes || 0;
+            const durationHrs = Math.floor(durationMins / 60);
+            const durationMinsRem = durationMins % 60;
+
+            // Session card
+            timelineHTML += `
+                <div class="session-card">
+                    <div class="session-header">
+                        <div>
+                            <div class="session-time-range">
+                                <i class="bi bi-clock-history"></i>
+                                ${formatTime(session.started_at)} - ${session.ended_at ? formatTime(session.ended_at) : 'Ongoing'}
+                            </div>
+                        </div>
+                        <div class="session-duration-badge">
+                            <i class="bi bi-hourglass-split"></i> ${durationHrs}h ${durationMinsRem}m
+                        </div>
+                    </div>
+
+                    <div class="session-stats">
+                        <div class="session-stat">
+                            <div class="session-stat-label">Stops</div>
+                            <div class="session-stat-value">${sessionStops.length}</div>
+                        </div>
+                        <div class="session-stat">
+                            <div class="session-stat-label">Visits</div>
+                            <div class="session-stat-value">${sessionVisits.length}</div>
+                        </div>
+                        <div class="session-stat">
+                            <div class="session-stat-label">GPS Points</div>
+                            <div class="session-stat-value">${sessionLocations.length}</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 8px;">
+            `;
+
+            // Start event
             timelineHTML += `
                 <div class="timeline-item">
                     <div class="timeline-dot start"><i class="bi bi-play-fill"></i></div>
-                    <div class="timeline-time">${formatTime(session.started_at)}</div>
-                    <div class="timeline-title">Started Duty</div>
-                    <div class="timeline-location text-success"><i class="bi bi-check-circle-fill"></i> Clocked In</div>
+                    <div class="timeline-content">
+                        <div class="timeline-time">
+                            <i class="bi bi-clock"></i>
+                            ${formatTime(session.started_at)}
+                        </div>
+                        <div class="timeline-title">Started Duty</div>
+                        <div class="timeline-meta">
+                            <span class="timeline-badge">
+                                <i class="bi bi-calendar3"></i> ${formatDate(session.started_at)}
+                            </span>
+                        </div>
+                    </div>
                 </div>
             `;
 
-            // Stops during this session
-            const sessionStops = stops.filter(s => s.duty_session_id === session.id);
-            sessionStops.forEach(stop => {
-                timelineHTML += `
-                    <div class="timeline-item" onclick="showStopDetails(${JSON.stringify(stop).replace(/"/g, '&quot;')})">
-                        <div class="timeline-dot stop"><i class="bi bi-pause-fill"></i></div>
-                        <div class="timeline-time">${formatTime(stop.started_at)}</div>
-                        <div class="timeline-title">Stop / Break</div>
-                        <span class="timeline-duration">${stop.duration_minutes} min</span>
-                        <div class="timeline-location"><i class="bi bi-geo-alt"></i> ${stop.latitude.toFixed(4)}, ${stop.longitude.toFixed(4)}</div>
-                    </div>
-                `;
+            // Combine and sort stops and visits by time
+            const activities = [
+                ...sessionStops.map(s => ({type: 'stop', data: s, time: new Date(s.started_at)})),
+                ...sessionVisits.map(v => ({type: 'visit', data: v, time: new Date(v.arrived_at)}))
+            ].sort((a, b) => a.time - b.time);
+
+            // Render activities
+            activities.forEach(activity => {
+                if (activity.type === 'stop') {
+                    const stop = activity.data;
+                    timelineHTML += `
+                        <div class="timeline-item" onclick="showStopDetails(${JSON.stringify(stop).replace(/"/g, '&quot;')})" style="cursor: pointer;">
+                            <div class="timeline-dot stop"><i class="bi bi-pause-fill"></i></div>
+                            <div class="timeline-content">
+                                <div class="timeline-time">
+                                    <i class="bi bi-clock"></i>
+                                    ${formatTime(stop.started_at)}
+                                </div>
+                                <div class="timeline-title">Stop / Break</div>
+                                <div class="timeline-meta">
+                                    <span class="timeline-badge duration">
+                                        <i class="bi bi-hourglass-split"></i> ${stop.duration_minutes || 0} min
+                                    </span>
+                                    ${stop.ended_at ? `
+                                        <span class="timeline-badge">
+                                            <i class="bi bi-check-circle"></i> Ended ${formatTime(stop.ended_at)}
+                                        </span>
+                                    ` : `
+                                        <span class="timeline-badge" style="background: #fef3c7; color: #92400e;">
+                                            <i class="bi bi-three-dots"></i> In Progress
+                                        </span>
+                                    `}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else if (activity.type === 'visit') {
+                    const visit = activity.data;
+                    timelineHTML += `
+                        <div class="timeline-item" onclick="showVisitDetails(${JSON.stringify(visit).replace(/"/g, '&quot;')})" style="cursor: pointer;">
+                            <div class="timeline-dot visit"><i class="bi bi-building"></i></div>
+                            <div class="timeline-content">
+                                <div class="timeline-time">
+                                    <i class="bi bi-clock"></i>
+                                    ${formatTime(visit.arrived_at)}
+                                </div>
+                                <div class="timeline-title">Installation Visit</div>
+                                <div class="timeline-location">
+                                    <i class="bi bi-pin-map-fill"></i>
+                                    <strong>${visit.installation_name || 'Installation'}</strong>
+                                </div>
+                                <div class="timeline-meta">
+                                    <span class="timeline-badge duration">
+                                        <i class="bi bi-hourglass-split"></i> ${visit.duration_minutes || 0} min
+                                    </span>
+                                    <span class="timeline-badge" style="background: #dcfce7; color: #166534;">
+                                        <i class="bi bi-check-circle-fill"></i> ${visit.status || 'Completed'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
             });
 
-            // Installation visits during this session
-            const sessionVisits = visits.filter(v => v.duty_session_id === session.id);
-            sessionVisits.forEach(visit => {
-                timelineHTML += `
-                    <div class="timeline-item" onclick="showVisitDetails(${JSON.stringify(visit).replace(/"/g, '&quot;')})">
-                        <div class="timeline-dot visit"><i class="bi bi-building"></i></div>
-                        <div class="timeline-time">${formatTime(visit.arrived_at)}</div>
-                        <div class="timeline-title">Installation Visit</div>
-                        <span class="timeline-duration">${visit.duration_minutes} min</span>
-                        <div class="timeline-location"><i class="bi bi-pin-map-fill"></i> ${visit.installation_name || 'Installation Site'}</div>
-                    </div>
-                `;
-            });
-
-            // Check for offline periods (gaps > 15 minutes in location data)
-            // This would require processing location points - simplified for now
-
-            // End of duty
+            // End event
             if (session.ended_at) {
                 timelineHTML += `
                     <div class="timeline-item">
                         <div class="timeline-dot end"><i class="bi bi-stop-fill"></i></div>
-                        <div class="timeline-time">${formatTime(session.ended_at)}</div>
-                        <div class="timeline-title">Ended Duty</div>
-                        <div class="timeline-location text-muted"><i class="bi bi-check-circle"></i> Clocked Out</div>
+                        <div class="timeline-content">
+                            <div class="timeline-time">
+                                <i class="bi bi-clock"></i>
+                                ${formatTime(session.ended_at)}
+                            </div>
+                            <div class="timeline-title">Ended Duty</div>
+                            <div class="timeline-meta">
+                                <span class="timeline-badge">
+                                    <i class="bi bi-check-circle"></i> Session Completed
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 `;
             } else {
-                timelineHTML += `
-                    <div class="timeline-item">
-                        <div class="timeline-dot start"><i class="bi bi-circle-fill pulse-dot"></i></div>
-                        <div class="timeline-time">Now</div>
-                        <div class="timeline-title">Currently Active</div>
-                        <div class="timeline-location text-success"><i class="bi bi-broadcast"></i> Live Tracking</div>
-                    </div>
-                `;
+                // Check if currently online
+                let isOnline = false;
+                if (sessionLocations.length > 0) {
+                    const latestLocation = sessionLocations[sessionLocations.length - 1];
+                    const lastTime = new Date(latestLocation.recorded_at);
+                    const minutesAgo = (new Date() - lastTime) / 1000 / 60;
+                    isOnline = minutesAgo < 10;
+                }
+
+                if (isOnline) {
+                    timelineHTML += `
+                        <div class="timeline-item">
+                            <div class="timeline-dot start"><i class="bi bi-broadcast"></i></div>
+                            <div class="timeline-content">
+                                <div class="timeline-time">
+                                    <i class="bi bi-circle-fill text-success" style="font-size: 0.5rem;"></i>
+                                    Live Now
+                                </div>
+                                <div class="timeline-title">Currently Active</div>
+                                <div class="timeline-meta">
+                                    <span class="timeline-badge" style="background: #dcfce7; color: #166534;">
+                                        <i class="bi bi-broadcast"></i> GPS Tracking Active
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    timelineHTML += `
+                        <div class="timeline-item">
+                            <div class="timeline-dot" style="background: #f59e0b;"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                            <div class="timeline-content">
+                                <div class="timeline-time">
+                                    <i class="bi bi-wifi-off"></i>
+                                    Connection Lost
+                                </div>
+                                <div class="timeline-title">No Recent GPS Data</div>
+                                <div class="timeline-meta">
+                                    <span class="timeline-badge" style="background: #fef3c7; color: #92400e;">
+                                        <i class="bi bi-exclamation-circle"></i> Session still active but no tracking
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
             }
+
+            timelineHTML += `
+                    </div>
+                </div>
+            `;
         });
 
         document.getElementById('timelineContent').innerHTML = timelineHTML;
+    }
+
+    function formatDate(datetime) {
+        return new Date(datetime).toLocaleDateString('en-MY', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+        });
     }
 
     // AI-based realistic path prediction between GPS points
@@ -1138,22 +1481,32 @@
             L.marker([locations[0].latitude, locations[0].longitude], { icon: startIcon })
                 .bindPopup(`
                     <div style="padding: 8px;">
-                        <h6 class="fw-bold text-success mb-2"><i class="bi bi-play-circle-fill"></i> Started Duty</h6>
-                        <p class="mb-1"><strong>Time:</strong> ${formatDateTime(sessions[0].started_at)}</p>
+                        <h6 class="fw-bold text-success mb-2"><i class="bi bi-play-circle-fill"></i> Start Location</h6>
+                        <p class="mb-1"><strong>Started:</strong> ${formatDateTime(sessions[0].started_at)}</p>
+                        <p class="mb-0 small text-muted">${locations[0].latitude.toFixed(6)}, ${locations[0].longitude.toFixed(6)}</p>
                     </div>
                 `)
                 .addTo(markersLayer);
         }
 
-        // End marker (if duty ended)
-        if (sessions && sessions[0] && sessions[0].ended_at) {
+        // End/Last seen marker
+        if (locations && locations.length > 0) {
             const lastLocation = locations[locations.length - 1];
+            const session = sessions && sessions[0];
+            const hasEnded = session && session.ended_at;
+            const statusText = hasEnded ? 'End Location' : 'Last Seen';
+            const statusIcon = hasEnded ? 'stop-circle-fill' : 'clock-history';
+            const statusColor = hasEnded ? 'secondary' : 'primary';
+
             L.marker([lastLocation.latitude, lastLocation.longitude], { icon: endIcon })
                 .bindPopup(`
                     <div style="padding: 8px;">
-                        <h6 class="fw-bold text-muted mb-2"><i class="bi bi-stop-circle-fill"></i> Ended Duty</h6>
-                        <p class="mb-1"><strong>Time:</strong> ${formatDateTime(sessions[0].ended_at)}</p>
-                        <p class="mb-0"><strong>Duration:</strong> ${Math.floor(sessions[0].duration_minutes / 60)}h ${sessions[0].duration_minutes % 60}m</p>
+                        <h6 class="fw-bold text-${statusColor} mb-2">
+                            <i class="bi bi-${statusIcon}"></i> ${statusText}
+                        </h6>
+                        <p class="mb-1"><strong>Time:</strong> ${lastLocation.recorded_at_human}</p>
+                        ${hasEnded ? `<p class="mb-1"><strong>Duration:</strong> ${Math.floor(session.duration_minutes / 60)}h ${session.duration_minutes % 60}m</p>` : ''}
+                        <p class="mb-0 small text-muted">${lastLocation.latitude.toFixed(6)}, ${lastLocation.longitude.toFixed(6)}</p>
                     </div>
                 `)
                 .addTo(markersLayer);
@@ -1173,12 +1526,14 @@
                 .addTo(markersLayer);
         });
 
-        // Visit markers
+        // Visit markers (visited installations - RED)
+        const visitedIds = new Set();
         visits.forEach(visit => {
+            visitedIds.add(visit.installation_location_id || visit.id);
             L.marker([visit.latitude, visit.longitude], { icon: visitIcon })
                 .bindPopup(`
                     <div style="padding: 8px; min-width: 200px;">
-                        <h6 class="fw-bold text-danger mb-2"><i class="bi bi-building"></i> Installation Visit</h6>
+                        <h6 class="fw-bold text-danger mb-2"><i class="bi bi-check-circle-fill"></i> Visited Installation</h6>
                         <p class="mb-1"><strong>Location:</strong> ${visit.installation_name}</p>
                         <p class="mb-1"><strong>Arrived:</strong> ${formatTime(visit.arrived_at)}</p>
                         <p class="mb-1"><strong>Duration:</strong> ${visit.duration_minutes} minutes</p>
@@ -1187,6 +1542,25 @@
                 `)
                 .addTo(markersLayer);
         });
+
+        // All installation markers (unvisited - PURPLE)
+        if (data.installations) {
+            data.installations.forEach(installation => {
+                // Skip if already visited (don't show duplicate)
+                if (visitedIds.has(installation.id)) return;
+
+                L.marker([installation.latitude, installation.longitude], { icon: installationIcon })
+                    .bindPopup(`
+                        <div style="padding: 8px; min-width: 200px;">
+                            <h6 class="fw-bold text-purple mb-2"><i class="bi bi-building"></i> Installation Location</h6>
+                            <p class="mb-1"><strong>${installation.name}</strong></p>
+                            <p class="mb-0 small text-muted">${installation.address || 'No address'}</p>
+                            <p class="mb-0 mt-2 small"><span class="badge bg-secondary">Not Visited</span></p>
+                        </div>
+                    `)
+                    .addTo(markersLayer);
+            });
+        }
 
         // Fit map to show all locations (use timeout to allow route to load)
         setTimeout(() => {
@@ -1197,110 +1571,310 @@
         }, 500);
     }
 
-    // AI-based realistic route building between GPS points
+    // AI-enhanced route with intelligent filtering and smoothing
     async function buildRealisticRoute(locations, routeLayer) {
-        const allRouteCoordinates = [];
+        console.log('=================================================');
+        console.log('🎨 BUILDING ROUTE - START');
+        console.log('=================================================');
+        console.log('Total locations received:', locations.length);
+        console.log('First 5 locations:', locations.slice(0, 5));
+        console.log('Last 5 locations:', locations.slice(-5));
 
-        // Process consecutive GPS points (2-min intervals)
-        for (let i = 0; i < locations.length - 1; i++) {
-            const from = locations[i];
-            const to = locations[i + 1];
+        if (!locations || locations.length === 0) {
+            console.error('❌ No locations to render');
+            hideLoading();
+            return;
+        }
 
-            // Get road route between consecutive points using OSRM
-            const segment = await fetchRoadRoute(from, to);
+        // SIMPLE TEST: Draw a basic polyline with ALL points first
+        console.log('🧪 TEST: Drawing simple polyline with all points...');
+        const allCoords = locations.map(loc => [loc.latitude, loc.longitude]);
+        console.log('Coordinates array length:', allCoords.length);
+        console.log('First 3 coords:', allCoords.slice(0, 3));
 
-            if (segment && segment.length > 0) {
-                allRouteCoordinates.push(...segment);
-            } else {
-                // Fallback: AI prediction using Catmull-Rom spline
-                const interpolated = interpolatePoints(from, to, 10);
-                allRouteCoordinates.push(...interpolated);
+        // Draw a thick red test line
+        const testLine = L.polyline(allCoords, {
+            color: '#FF0000',
+            weight: 8,
+            opacity: 0.9
+        }).addTo(routeLayer);
+        console.log('✅ Test polyline added:', testLine);
+        console.log('Test polyline bounds:', testLine.getBounds());
+
+        // ALSO draw colored segments
+        console.log('🎨 Drawing colored segments...');
+        const segments = groupByMovementState(locations);
+        console.log('✓ Created', segments.length, 'route segments');
+
+        let polylinesDrawn = 0;
+        let circlesDrawn = 0;
+
+        segments.forEach((segment, segIndex) => {
+            if (segment.points.length < 1) {
+                console.warn(`⚠️ Segment ${segIndex} has no points, skipping`);
+                return;
             }
-        }
 
-        // Draw complete route
-        if (allRouteCoordinates.length > 0) {
-            const routeLine = L.polyline(allRouteCoordinates, {
-                color: '#2563EB',
-                weight: 5,
-                opacity: 0.8,
-                smoothFactor: 2
-            }).addTo(routeLayer);
+            const coords = segment.points.map(p => [p.latitude, p.longitude]);
+            console.log(`📍 Segment ${segIndex}: ${segment.type}, ${coords.length} coords, color: ${segment.color}`);
 
-            console.log('✓ AI Route built:', allRouteCoordinates.length, 'predicted points');
-        }
+            if (segment.type === 'stopped' && segment.points.length <= 3) {
+                const centerLat = segment.points.reduce((sum, p) => sum + p.latitude, 0) / segment.points.length;
+                const centerLng = segment.points.reduce((sum, p) => sum + p.longitude, 0) / segment.points.length;
 
+                L.circle([centerLat, centerLng], {
+                    radius: 15,
+                    color: '#ef4444',
+                    fillColor: '#ef4444',
+                    fillOpacity: 0.3,
+                    weight: 2
+                }).addTo(routeLayer);
+                circlesDrawn++;
+            } else {
+                const polyline = L.polyline(coords, {
+                    color: segment.color,
+                    weight: segment.type === 'stopped' ? 4 : 5,
+                    opacity: segment.type === 'stopped' ? 0.6 : 0.8,
+                    smoothFactor: 1.0,
+                    lineCap: 'round',
+                    lineJoin: 'round',
+                    dashArray: segment.type === 'stopped' ? '5, 10' : null
+                }).addTo(routeLayer);
+                polylinesDrawn++;
+            }
+        });
+
+        console.log(`✅ Route rendered: ${polylinesDrawn} polylines, ${circlesDrawn} circles`);
+        console.log('✅ Route layer total layers:', routeLayer.getLayers().length);
+        console.log('=================================================');
         hideLoading();
     }
 
-    // Fetch road route between two points using OSRM
-    const routeCache = new Map();
+    // STRICT GPS filtering - only accept high-quality points
+    function filterGPSNoise(points) {
+        if (!points || points.length === 0) return [];
 
-    async function fetchRoadRoute(from, to) {
-        const cacheKey = `${from.latitude.toFixed(4)},${from.longitude.toFixed(4)}-${to.latitude.toFixed(4)},${to.longitude.toFixed(4)}`;
+        const filtered = [];
 
-        // Check cache first
-        if (routeCache.has(cacheKey)) {
-            return routeCache.get(cacheKey);
-        }
+        for (let i = 0; i < points.length; i++) {
+            const current = points[i];
 
-        try {
-            const url = `https://router.project-osrm.org/route/v1/driving/${from.longitude},${from.latitude};${to.longitude},${to.latitude}?overview=full&geometries=geojson`;
-
-            const response = await fetch(url, {
-                signal: AbortSignal.timeout(3000) // 3 second timeout
-            });
-
-            if (!response.ok) {
-                throw new Error('OSRM request failed');
+            // 1. STRICT ACCURACY: Only accept GPS with accuracy < 20 meters
+            if (current.accuracy && current.accuracy > 20) {
+                console.log(`Filtered point ${i}: Poor accuracy ${current.accuracy.toFixed(1)}m`);
+                continue;
             }
 
-            const data = await response.json();
-
-            if (data.routes && data.routes[0] && data.routes[0].geometry) {
-                const coordinates = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]); // Flip to [lat, lng]
-                routeCache.set(cacheKey, coordinates);
-                return coordinates;
+            // 2. Validate coordinates
+            if (!current.latitude || !current.longitude ||
+                current.latitude === 0 || current.longitude === 0) {
+                console.log(`Filtered point ${i}: Invalid coordinates`);
+                continue;
             }
-        } catch (error) {
-            console.warn('OSRM unavailable, using AI interpolation');
+
+            // 3. Check against previous point if exists
+            if (filtered.length > 0) {
+                const prev = filtered[filtered.length - 1];
+                const distFromPrev = calculateDistance(
+                    prev.latitude, prev.longitude,
+                    current.latitude, current.longitude
+                );
+
+                // Skip if too close and stopped (GPS drift)
+                if (distFromPrev < 0.003) { // < 3 meters
+                    const speedKmh = (current.speed || 0) * 3.6;
+                    if (speedKmh < 1) {
+                        console.log(`Filtered point ${i}: GPS drift ${distFromPrev.toFixed(4)}km`);
+                        continue;
+                    }
+                }
+
+                // Filter impossible jumps (teleportation)
+                // Max realistic: 80 km/h for 60s = 1.33 km
+                if (distFromPrev > 1.5) { // > 1.5 km jump
+                    console.warn(`Filtered point ${i}: Impossible jump ${distFromPrev.toFixed(3)}km`);
+                    continue;
+                }
+
+                // Calculate implied speed
+                const timeDiff = 60; // Assume max 60 seconds between points
+                const impliedSpeedKmh = (distFromPrev / timeDiff) * 3600;
+
+                // Filter impossible speeds (>100 km/h for delivery rider)
+                if (impliedSpeedKmh > 100) {
+                    console.warn(`Filtered point ${i}: Impossible speed ${impliedSpeedKmh.toFixed(1)} km/h`);
+                    continue;
+                }
+
+                // Check for accuracy degradation
+                if (prev.accuracy && current.accuracy &&
+                    current.accuracy > prev.accuracy * 2.5) {
+                    console.log(`Filtered point ${i}: Accuracy degraded from ${prev.accuracy.toFixed(1)}m to ${current.accuracy.toFixed(1)}m`);
+                    continue;
+                }
+            }
+
+            // Point passed all validation - keep it
+            filtered.push(current);
         }
 
-        return null;
+        console.log(`GPS Filtering: ${points.length} → ${filtered.length} points (${((1 - filtered.length/points.length) * 100).toFixed(1)}% filtered)`);
+        return filtered;
     }
 
-    // AI-based interpolation using Catmull-Rom spline (smooth curves)
-    function interpolatePoints(from, to, numPoints = 10) {
-        const points = [];
+    // Simplify path using Douglas-Peucker algorithm
+    function simplifyPath(points, tolerance) {
+        if (!points || points.length < 3) return points;
 
-        // Use Turf.js to create smooth curve
-        const line = turf.lineString([
-            [from.longitude, from.latitude],
-            [to.longitude, to.latitude]
-        ]);
+        // Douglas-Peucker algorithm
+        function douglasPeucker(points, tolerance) {
+            if (!points || points.length < 3) return points;
 
-        // Add intermediate points with slight curve (simulates road following)
-        for (let i = 0; i <= numPoints; i++) {
-            const fraction = i / numPoints;
+            let maxDistance = 0;
+            let maxIndex = 0;
 
-            // Linear interpolation
-            const lat = from.latitude + (to.latitude - from.latitude) * fraction;
-            const lng = from.longitude + (to.longitude - from.longitude) * fraction;
+            // Find point with maximum distance from line
+            for (let i = 1; i < points.length - 1; i++) {
+                const distance = perpendicularDistance(
+                    points[i],
+                    points[0],
+                    points[points.length - 1]
+                );
 
-            // Add slight curve based on distance (simulates road bends)
-            const distance = turf.distance(
-                turf.point([from.longitude, from.latitude]),
-                turf.point([to.longitude, to.latitude]),
-                { units: 'kilometers' }
-            );
+                if (distance > maxDistance) {
+                    maxDistance = distance;
+                    maxIndex = i;
+                }
+            }
 
-            // Add curve offset (perpendicular to line)
-            const curveOffset = Math.sin(fraction * Math.PI) * distance * 0.02;
+            // If max distance is greater than tolerance, recursively simplify
+            if (maxDistance > tolerance) {
+                const left = douglasPeucker(points.slice(0, maxIndex + 1), tolerance);
+                const right = douglasPeucker(points.slice(maxIndex), tolerance);
 
-            points.push([lat + curveOffset * 0.001, lng]);
+                return left.slice(0, -1).concat(right);
+            } else {
+                return [points[0], points[points.length - 1]];
+            }
         }
 
-        return points;
+        return douglasPeucker(points, tolerance);
+    }
+
+    // Calculate perpendicular distance from point to line
+    function perpendicularDistance(point, lineStart, lineEnd) {
+        const x = point.latitude;
+        const y = point.longitude;
+        const x1 = lineStart.latitude;
+        const y1 = lineStart.longitude;
+        const x2 = lineEnd.latitude;
+        const y2 = lineEnd.longitude;
+
+        const A = x - x1;
+        const B = y - y1;
+        const C = x2 - x1;
+        const D = y2 - y1;
+
+        const dot = A * C + B * D;
+        const lenSq = C * C + D * D;
+        let param = -1;
+
+        if (lenSq !== 0) param = dot / lenSq;
+
+        let xx, yy;
+
+        if (param < 0) {
+            xx = x1;
+            yy = y1;
+        } else if (param > 1) {
+            xx = x2;
+            yy = y2;
+        } else {
+            xx = x1 + param * C;
+            yy = y1 + param * D;
+        }
+
+        const dx = x - xx;
+        const dy = y - yy;
+
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    // Group points by movement state
+    function groupByMovementState(points) {
+        if (points.length === 0) return [];
+
+        const segments = [];
+        let currentSegment = {
+            type: 'moving',
+            color: getSpeedColor(points[0]),
+            points: [points[0]]
+        };
+
+        for (let i = 1; i < points.length; i++) {
+            const point = points[i];
+            const speedKmh = (point.speed || 0) * 3.6;
+            const color = getSpeedColor(point);
+            const isStopped = speedKmh < 2;
+
+            // Check if we should start a new segment
+            const typeChanged = (isStopped && currentSegment.type === 'moving') ||
+                              (!isStopped && currentSegment.type === 'stopped');
+            const colorChanged = !isStopped && color !== currentSegment.color;
+
+            if (typeChanged || colorChanged) {
+                // Save current segment
+                if (currentSegment.points.length > 0) {
+                    segments.push(currentSegment);
+                }
+
+                // Start new segment
+                currentSegment = {
+                    type: isStopped ? 'stopped' : 'moving',
+                    color: color,
+                    points: [point]
+                };
+            } else {
+                currentSegment.points.push(point);
+            }
+        }
+
+        // Add final segment
+        if (currentSegment.points.length > 0) {
+            segments.push(currentSegment);
+        }
+
+        return segments;
+    }
+
+    // Calculate distance between two GPS points (km)
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371; // Earth radius in km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                  Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
+    // VIBRANT COLOR PALETTE for AI-powered visualization (matches mobile app)
+    function getSpeedColor(loc) {
+        const speedKmh = (loc.speed || 0) * 3.6;
+        if (speedKmh < 2) return '#DC2626';      // Bright Red - Stopped
+        if (speedKmh < 10) return '#F59E0B';     // Amber - Slow
+        if (speedKmh < 30) return '#10B981';     // Emerald - Normal
+        if (speedKmh < 60) return '#3B82F6';     // Blue - Fast
+        return '#8B5CF6';                         // Purple - Highway
+    }
+
+    function getActivityLabel(speedKmh) {
+        if (speedKmh < 2) return 'Stopped';
+        if (speedKmh < 10) return 'Slow (<10 km/h)';
+        if (speedKmh < 30) return 'Normal (10-30 km/h)';
+        if (speedKmh < 60) return 'Fast (30-60 km/h)';
+        return 'Highway (>60 km/h)';
     }
 
 
