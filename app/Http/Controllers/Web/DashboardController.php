@@ -91,6 +91,8 @@ class DashboardController extends Controller
                             'latitude' => $lastPoint['lat'],
                             'longitude' => $lastPoint['lng'],
                             'recorded_at' => Carbon::parse(substr($latestBatch->batch_end_time, 0, 10) . ' ' . $lastPoint['ts']),
+                            'accuracy' => $lastPoint['acc'] ?? 0,
+                            'speed' => $lastPoint['spd'] ?? 0,
                         ];
                     }
                 }
