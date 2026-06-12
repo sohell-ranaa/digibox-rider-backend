@@ -286,7 +286,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h4 class="fw-bold mb-2">
-                        <i class="bi bi-building-fill text-danger"></i> Installation Locations
+                        <i class="bi bi-building-fill" style="color: #2563EB;"></i> Installation Locations
                     </h4>
                     <p class="text-muted mb-0">Manage customer installation sites and geofence zones</p>
                 </div>
@@ -314,7 +314,7 @@
                         <p class="text-muted mb-1 small">Total Locations</p>
                         <h3 class="mb-0 fw-bold">{{ $installations->total() }}</h3>
                     </div>
-                    <div class="icon-wrapper" style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white;">
+                    <div class="icon-wrapper" style="background: linear-gradient(135deg, #2563EB, #1e40af); color: white;">
                         <i class="bi bi-building"></i>
                     </div>
                 </div>
@@ -549,7 +549,7 @@
             // Marker
             const marker = L.marker([lat, lng], {
                 icon: L.divIcon({
-                    html: '<div style="background: #ef4444; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"><i class="bi bi-building-fill" style="font-size: 14px;"></i></div>',
+                    html: '<div style="background: #2563EB; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"><i class="bi bi-building-fill" style="font-size: 14px;"></i></div>',
                     className: '',
                     iconSize: [30, 30],
                     iconAnchor: [15, 15]
@@ -558,8 +558,8 @@
 
             // Geofence circle
             L.circle([lat, lng], {
-                color: '#ef4444',
-                fillColor: '#fecaca',
+                color: '#2563EB',
+                fillColor: '#BFDBFE',
                 fillOpacity: 0.2,
                 radius: radius,
                 weight: 2
