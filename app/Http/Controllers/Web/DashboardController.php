@@ -148,6 +148,8 @@ class DashboardController extends Controller
                 'rider' => (object)['name' => $batch->rider_name],
                 'dutySession' => (object)['started_at' => Carbon::parse($batch->started_at)],
                 'recorded_at' => Carbon::parse(substr($batch->batch_end_time, 0, 10) . ' ' . $lastPoint['ts']),
+                'latitude' => $lastPoint['lat'] ?? 0,
+                'longitude' => $lastPoint['lng'] ?? 0,
             ];
         });
 
