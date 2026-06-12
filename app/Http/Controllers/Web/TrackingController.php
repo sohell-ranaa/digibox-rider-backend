@@ -31,9 +31,9 @@ class TrackingController extends Controller
 
     public function getActiveRiders()
     {
-        $activeSessions = DutySession::with(['rider', 'locationPoints' => function($query) {
-            $query->orderBy('recorded_at', 'desc')->first();
-        }])->where('status', 'active')->get();
+        $activeSessions = DutySession::with('rider')
+            ->where('status', 'active')
+            ->get();
 
         $riders = [];
         foreach ($activeSessions as $session) {
@@ -51,6 +51,8 @@ class TrackingController extends Controller
                     'latitude' => $lastPoint['lat'],
                     'longitude' => $lastPoint['lng'],
                     'recorded_at' => Carbon::parse(substr($latestBatch->batch_end_time, 0, 10) . ' ' . $lastPoint['ts']),
+                    'accuracy' => $lastPoint['acc'] ?? 0,
+                    'speed' => $lastPoint['spd'] ?? 0,
                 ];
                 $riders[] = [
                     'id' => $session->rider->id,
@@ -97,6 +99,8 @@ class TrackingController extends Controller
                     'latitude' => $lastPoint['lat'],
                     'longitude' => $lastPoint['lng'],
                     'recorded_at' => Carbon::parse(substr($latestBatch->batch_end_time, 0, 10) . ' ' . $lastPoint['ts']),
+                    'accuracy' => $lastPoint['acc'] ?? 0,
+                    'speed' => $lastPoint['spd'] ?? 0,
                 ];
                 // Determine if online (last location within 10 minutes)
                 $isOnline = $latestLocation->recorded_at->diffInMinutes(now()) < 10;
