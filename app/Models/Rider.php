@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class Rider extends Authenticatable
 {
@@ -79,20 +81,27 @@ class Rider extends Authenticatable
             return false;
         }
 
-        // Double-check that session isn't stale
-        $lastLocation = $this->locationPoints()
+        // Double-check that session isn't stale - get latest location from batches
+        $lastBatch = DB::table('location_batches')
             ->where('duty_session_id', $activeSession->id)
-            ->latest('recorded_at')
+            ->orderBy('batch_end_time', 'desc')
             ->first();
 
-        // If no location data for 10+ minutes, session should be considered inactive
-        if ($lastLocation && $lastLocation->recorded_at->diffInMinutes(now()) >= 10) {
-            return false;
-        }
-
-        // If session started more than 15 minutes ago with no location data at all, inactive
-        if (!$lastLocation && $activeSession->started_at->diffInMinutes(now()) >= 15) {
-            return false;
+        if ($lastBatch) {
+            $points = json_decode($lastBatch->points, true);
+            $lastPoint = end($points);
+            if ($lastPoint) {
+                $lastLocationTime = Carbon::parse(substr($lastBatch->batch_end_time, 0, 10) . ' ' . $lastPoint['ts']);
+                // If no location data for 10+ minutes, session should be considered inactive
+                if ($lastLocationTime->diffInMinutes(now()) >= 10) {
+                    return false;
+                }
+            }
+        } else {
+            // If session started more than 15 minutes ago with no location data at all, inactive
+            if ($activeSession->started_at->diffInMinutes(now()) >= 15) {
+                return false;
+            }
         }
 
         return true;
