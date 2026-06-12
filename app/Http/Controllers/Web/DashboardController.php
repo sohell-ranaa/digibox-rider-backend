@@ -71,15 +71,30 @@ class DashboardController extends Controller
 
         // Get all riders with their latest location and online status
         $allRidersWithLocation = Rider::where('is_active', true)
-            ->with(['locationPoints' => function($q) {
-                $q->latest('recorded_at')->limit(1);
-            }])
             ->with(['dutySessions' => function($q) {
                 $q->where('status', 'active')->latest('started_at')->limit(1);
             }])
             ->get()
             ->map(function($rider) use ($now) {
-                $latestLocation = $rider->locationPoints->first();
+                // Get latest location from batches
+                $latestBatch = DB::table('location_batches')
+                    ->where('rider_id', $rider->id)
+                    ->orderBy('batch_end_time', 'desc')
+                    ->first();
+
+                $latestLocation = null;
+                if ($latestBatch) {
+                    $points = json_decode($latestBatch->points, true);
+                    $lastPoint = end($points);
+                    if ($lastPoint) {
+                        $latestLocation = (object)[
+                            'latitude' => $lastPoint['lat'],
+                            'longitude' => $lastPoint['lng'],
+                            'recorded_at' => Carbon::parse(substr($latestBatch->batch_end_time, 0, 10) . ' ' . $lastPoint['ts']),
+                        ];
+                    }
+                }
+
                 $activeSession = $rider->dutySessions->first();
 
                 // Determine if truly online (location data in last 10 min)
