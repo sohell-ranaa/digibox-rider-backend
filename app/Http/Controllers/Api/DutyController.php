@@ -87,11 +87,11 @@ class DutyController extends Controller
                 // Clear cache to refresh online status
                 $this->riderCache->markRiderOnline($rider->id);
 
-                // Return the active session with 200 OK (not 400 error)
+                // Return the active session with 201 (same as new session for app compatibility)
                 return response()->json([
                     'message' => 'Duty session resumed',
                     'duty_session' => $activeSession,
-                ], 200);
+                ], 201);
             }
         }
 
