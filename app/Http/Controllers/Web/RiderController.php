@@ -188,15 +188,16 @@ class RiderController extends Controller
             'phone' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:100',
             'password' => 'nullable|string|min:6',
-            'is_active' => 'boolean',
         ]);
 
+        // Handle password update
         if (empty($validated['password'])) {
             unset($validated['password']);
         } else {
             $validated['password'] = Hash::make($validated['password']);
         }
 
+        // Handle checkbox (checkboxes don't send value when unchecked)
         $validated['is_active'] = $request->has('is_active');
 
         $rider->update($validated);
