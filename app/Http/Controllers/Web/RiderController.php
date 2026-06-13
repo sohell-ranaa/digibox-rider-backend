@@ -79,10 +79,12 @@ class RiderController extends Controller
             'phone' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:100',
             'password' => 'required|string|min:6',
-            'is_active' => 'boolean',
         ]);
 
+        // Hash password
         $validated['password'] = Hash::make($validated['password']);
+
+        // Handle checkbox (checkboxes don't send value when unchecked)
         $validated['is_active'] = $request->has('is_active');
 
         Rider::create($validated);
