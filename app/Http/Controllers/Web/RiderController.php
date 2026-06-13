@@ -45,16 +45,12 @@ class RiderController extends Controller
 
             // Calculate total duty hours this week
             $weekStart = now()->startOfWeek();
-            $rider->weekly_hours = $rider->dutySessions()
+            $totalMinutes = $rider->dutySessions()
                 ->where('started_at', '>=', $weekStart)
                 ->where('status', 'completed')
-                ->get()
-                ->sum(function($session) {
-                    if ($session->ended_at) {
-                        return $session->started_at->diffInHours($session->ended_at);
-                    }
-                    return 0;
-                });
+                ->sum('total_duration_minutes');
+
+            $rider->weekly_hours = round($totalMinutes / 60, 1);
 
             // Count completed sessions this month
             $monthStart = now()->startOfMonth();
@@ -115,12 +111,7 @@ class RiderController extends Controller
             'total_sessions' => $dutySessions->count(),
             'completed_sessions' => $dutySessions->where('status', 'completed')->count(),
             'active_sessions' => $dutySessions->where('status', 'active')->count(),
-            'total_hours' => $dutySessions->where('status', 'completed')->sum(function($session) {
-                if ($session->ended_at) {
-                    return $session->started_at->diffInHours($session->ended_at);
-                }
-                return 0;
-            }),
+            'total_hours' => round($dutySessions->where('status', 'completed')->sum('total_duration_minutes') / 60, 1),
             'total_distance' => $dutySessions->sum('total_distance_km'),
             'total_locations' => $totalLocationCount,
         ];
@@ -139,12 +130,7 @@ class RiderController extends Controller
                 'date' => $date,
                 'sessions' => $sessions->count(),
                 'completed' => $completedSessions->count(),
-                'hours' => $completedSessions->sum(function($session) {
-                    if ($session->ended_at) {
-                        return $session->started_at->diffInMinutes($session->ended_at) / 60;
-                    }
-                    return 0;
-                }),
+                'hours' => round($completedSessions->sum('total_duration_minutes') / 60, 1),
                 'distance' => $sessions->sum('total_distance_km'),
                 'locations' => $dayLocationCount,
                 'first_start' => $sessions->min('started_at'),
