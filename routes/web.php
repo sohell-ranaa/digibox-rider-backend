@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\TrackingController;
+use App\Http\Controllers\Web\RealTimeMapController;
 use App\Http\Controllers\Web\RiderController;
 use App\Http\Controllers\Web\InstallationController;
 use App\Http\Controllers\Web\ProfileController;
@@ -28,6 +29,11 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/tracking/all-riders', [TrackingController::class, 'getAllRidersStatus'])->name('tracking.all-riders');
     Route::get('/tracking/rider/{id}', [TrackingController::class, 'getRiderLocation'])->name('tracking.rider');
     Route::get('/tracking/historical', [TrackingController::class, 'getHistoricalData'])->name('tracking.historical');
+
+    // Real-Time Map (AJAX endpoints for live GPS streaming)
+    Route::get('/realtime/riders', [RealTimeMapController::class, 'getOnlineRiders'])->name('realtime.riders');
+    Route::get('/realtime/rider/{id}', [RealTimeMapController::class, 'getRiderLocation'])->name('realtime.rider');
+    Route::get('/realtime/count', [RealTimeMapController::class, 'getOnlineCount'])->name('realtime.count');
 
     // Riders Management
     Route::resource('riders', RiderController::class);

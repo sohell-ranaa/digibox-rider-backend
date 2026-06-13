@@ -26,6 +26,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Location Tracking
     Route::post('/locations/record', [LocationController::class, 'record']);
     Route::post('/locations/bulk', [LocationController::class, 'bulk']);
+    Route::post('/locations/stream', [LocationController::class, 'stream']); // Real-time streaming
     Route::get('/locations/my-latest', [LocationController::class, 'myLatest']);
 
     // Installation Locations

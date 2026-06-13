@@ -7,15 +7,18 @@ use App\Models\InstallationLocation;
 use App\Models\InstallationVisit;
 use App\Models\DutySession;
 use App\Services\Cache\RiderCacheService;
+use App\Services\Cache\RealTimeLocationService;
 use Illuminate\Http\Request;
 
 class LocationController extends Controller
 {
     protected $riderCache;
+    protected $realTimeLocation;
 
-    public function __construct(RiderCacheService $riderCache)
+    public function __construct(RiderCacheService $riderCache, RealTimeLocationService $realTimeLocation)
     {
         $this->riderCache = $riderCache;
+        $this->realTimeLocation = $realTimeLocation;
     }
     public function record(Request $request)
     {
@@ -137,6 +140,49 @@ class LocationController extends Controller
             'inserted' => $inserted,
             'skipped' => $skipped,
         ], 201);
+    }
+
+    /**
+     * REAL-TIME STREAMING: Receive single location update for live map
+     * This endpoint is called immediately when GPS updates (1-30 second intervals)
+     */
+    public function stream(Request $request)
+    {
+        $validated = $request->validate([
+            'duty_session_id' => 'required|exists:duty_sessions,id',
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+            'accuracy' => 'nullable|numeric',
+            'speed' => 'nullable|numeric',
+            'bearing' => 'nullable|numeric',
+            'altitude' => 'nullable|numeric',
+            'recorded_at' => 'required|date',
+        ]);
+
+        $rider = $request->user();
+
+        // Store in Redis for real-time map (TTL: 5 minutes)
+        $this->realTimeLocation->storeRealTimeLocation($rider->id, [
+            'latitude' => $validated['latitude'],
+            'longitude' => $validated['longitude'],
+            'accuracy' => $validated['accuracy'] ?? null,
+            'speed' => $validated['speed'] ?? null,
+            'bearing' => $validated['bearing'] ?? null,
+            'recorded_at' => $validated['recorded_at'],
+        ]);
+
+        // Also mark rider as online in cache
+        $this->riderCache->markRiderOnline($rider->id, [
+            'latitude' => $validated['latitude'],
+            'longitude' => $validated['longitude'],
+        ]);
+
+        // Note: We don't save to database here - batch upload handles that
+        // This is purely for real-time map visualization
+
+        return response()->json([
+            'message' => 'Location streamed successfully',
+        ], 200);
     }
 
     public function myLatest(Request $request)

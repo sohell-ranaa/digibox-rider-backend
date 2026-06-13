@@ -809,22 +809,40 @@
     }
 
     // Live tracking functions
+    // AUTO-REFRESH INTERVAL (3 seconds for real-time)
+    let realtimeRefreshInterval = null;
+
     function loadLiveRiders() {
         const loadingEl = document.getElementById('liveMapLoading');
         loadingEl.style.display = 'flex';
 
-        fetch('/tracking/all-riders')
+        // Use NEW real-time endpoint for live GPS streaming
+        fetch('/realtime/riders')
             .then(response => response.json())
-            .then(riders => {
+            .then(data => {
+                const riders = data.riders || [];
                 renderLiveRiders(riders);
                 loadingEl.style.display = 'none';
-                document.getElementById('liveLastUpdate').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+                document.getElementById('liveLastUpdate').textContent = 'Last updated: ' + new Date().toLocaleTimeString() + ' (LIVE)';
+
+                // Start auto-refresh if not already running
+                if (!realtimeRefreshInterval) {
+                    realtimeRefreshInterval = setInterval(loadLiveRiders, 3000); // Refresh every 3 seconds
+                    console.log('✅ Real-time auto-refresh started (3s interval)');
+                }
             })
             .catch(error => {
                 console.error('Error loading live riders:', error);
                 loadingEl.style.display = 'none';
             });
     }
+
+    // Stop auto-refresh when leaving page
+    window.addEventListener('beforeunload', function() {
+        if (realtimeRefreshInterval) {
+            clearInterval(realtimeRefreshInterval);
+        }
+    });
 
     function renderLiveRiders(riders) {
         // Clear existing markers
