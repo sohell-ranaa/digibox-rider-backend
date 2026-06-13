@@ -55,15 +55,59 @@ class DashboardController extends Controller
         // Today's installation visits
         $todayVisits = InstallationVisit::whereDate('arrived_at', $today)->count();
 
-        // Total duty hours today
-        $todayDutyMinutes = DutySession::whereDate('started_at', $today)
+        // Total duty hours today (including active sessions)
+        $completedMinutes = DutySession::whereDate('started_at', $today)
+            ->where('status', 'completed')
             ->sum('total_duration_minutes');
-        $todayDutyHours = round($todayDutyMinutes / 60, 1);
 
-        // Total distance covered today
-        $todayDistance = DutySession::whereDate('started_at', $today)
+        // Add active session durations (calculate from start to now)
+        $activeSessions = DutySession::whereDate('started_at', $today)
+            ->where('status', 'active')
+            ->get();
+
+        $activeMinutes = 0;
+        foreach ($activeSessions as $session) {
+            $activeMinutes += $session->started_at->diffInMinutes($now);
+        }
+
+        $todayDutyHours = round(($completedMinutes + $activeMinutes) / 60, 1);
+
+        // Total distance covered today (including active sessions)
+        $completedDistance = DutySession::whereDate('started_at', $today)
+            ->where('status', 'completed')
             ->sum('total_distance_km');
-        $todayDistance = round($todayDistance, 2);
+
+        // Calculate distance for active sessions from their GPS points
+        $activeDistance = 0;
+        foreach ($activeSessions as $session) {
+            // Get all batches for this session and sum the distances between points
+            $batches = DB::table('location_batches')
+                ->where('duty_session_id', $session->id)
+                ->orderBy('batch_start_time', 'asc')
+                ->get();
+
+            $sessionDistance = 0;
+            $previousPoint = null;
+
+            foreach ($batches as $batch) {
+                $points = json_decode($batch->points, true);
+                foreach ($points as $point) {
+                    if ($previousPoint) {
+                        $sessionDistance += $this->haversineDistance(
+                            $previousPoint['lat'],
+                            $previousPoint['lng'],
+                            $point['lat'],
+                            $point['lng']
+                        );
+                    }
+                    $previousPoint = $point;
+                }
+            }
+
+            $activeDistance += $sessionDistance / 1000; // Convert meters to km
+        }
+
+        $todayDistance = round($completedDistance + $activeDistance, 2);
 
         // =====================================================
         // SECTION 3: REAL-TIME ONLINE RIDERS & LIVE MAP
@@ -322,5 +366,24 @@ class DashboardController extends Controller
             'todayAvgAccuracy',
             'todayHighAccuracyPercent'
         ));
+    }
+
+    /**
+     * Calculate distance between two GPS points using Haversine formula
+     */
+    private function haversineDistance(float $lat1, float $lon1, float $lat2, float $lon2): float
+    {
+        $earthRadius = 6371000; // meters
+
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLon = deg2rad($lon2 - $lon1);
+
+        $a = sin($dLat / 2) * sin($dLat / 2) +
+             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+             sin($dLon / 2) * sin($dLon / 2);
+
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+        return $earthRadius * $c;
     }
 }
