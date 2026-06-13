@@ -909,7 +909,7 @@
                     <span class="input-group-text bg-light border-0">
                         <i class="bi bi-search"></i>
                     </span>
-                    <input type="text" class="form-control border-0 bg-light" id="searchInput" placeholder="Search by name, username...">
+                    <input type="text" class="form-control border-0 bg-light" id="searchInput" placeholder="Search by name, username, phone, or email...">
                 </div>
             </div>
             <div class="col-6 col-md-4 col-lg-3">
@@ -1055,6 +1055,7 @@
 
 @push('scripts')
 <script>
+document.addEventListener('DOMContentLoaded', function() {
     // Filter elements
     const searchInput = document.getElementById('searchInput');
     const statusFilter = document.getElementById('statusFilter');
@@ -1073,11 +1074,17 @@
         riderItems.forEach(item => {
             const name = item.dataset.name;
             const username = item.dataset.username;
+            const phone = item.dataset.phone;
+            const email = item.dataset.email;
             const status = item.dataset.status;
             const online = item.dataset.online;
             const duty = item.dataset.duty;
 
-            const matchesSearch = name.includes(searchTerm) || username.includes(searchTerm);
+            // Search in name, username, phone, and email
+            const matchesSearch = name.includes(searchTerm) ||
+                                  username.includes(searchTerm) ||
+                                  phone.includes(searchTerm) ||
+                                  email.includes(searchTerm);
             const matchesStatus = !statusValue || status === statusValue;
             const matchesOnline = !onlineValue || online === onlineValue;
             const matchesDuty = !dutyValue || duty === dutyValue;
@@ -1090,23 +1097,24 @@
             }
         });
 
-        // Show empty state message if needed
         console.log(`Showing ${visibleCount} riders`);
     }
 
     // Add event listeners
-    searchInput.addEventListener('input', filterRiders);
-    statusFilter.addEventListener('change', filterRiders);
-    onlineFilter.addEventListener('change', filterRiders);
-    dutyFilter.addEventListener('change', filterRiders);
+    if (searchInput) searchInput.addEventListener('input', filterRiders);
+    if (statusFilter) statusFilter.addEventListener('change', filterRiders);
+    if (onlineFilter) onlineFilter.addEventListener('change', filterRiders);
+    if (dutyFilter) dutyFilter.addEventListener('change', filterRiders);
 
-    function resetFilters() {
-        searchInput.value = '';
-        statusFilter.value = '';
-        onlineFilter.value = '';
-        dutyFilter.value = '';
+    // Make resetFilters function globally available
+    window.resetFilters = function() {
+        if (searchInput) searchInput.value = '';
+        if (statusFilter) statusFilter.value = '';
+        if (onlineFilter) onlineFilter.value = '';
+        if (dutyFilter) dutyFilter.value = '';
         filterRiders();
     }
+});
 </script>
 @endpush
 @endsection
