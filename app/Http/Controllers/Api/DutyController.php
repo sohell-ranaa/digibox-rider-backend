@@ -38,42 +38,60 @@ class DutyController extends Controller
                 ->orderBy('batch_end_time', 'desc')
                 ->first();
 
-            // If no location data OR last batch is older than 10 minutes, auto-close the session
+            // AUTO-CLOSE ONLY IF NO DATA FOR 60+ MINUTES (internet outage)
             $shouldAutoClose = false;
             $reason = '';
 
             if (!$lastBatch) {
-                $shouldAutoClose = true;
-                $reason = 'No location data received';
-                Log::info("Auto-closing stale session {$activeSession->id} for rider {$rider->id}: No location data");
+                // No location data yet - only auto-close if session is older than 60 minutes with no data
+                if ($activeSession->started_at->diffInMinutes(now()) >= 60) {
+                    $shouldAutoClose = true;
+                    $reason = 'Internet outage - No location data for 60+ minutes';
+                    Log::warning("⚠️ Auto-closing session {$activeSession->id} for rider {$rider->id}: No location data for 60+ minutes (internet outage)");
+                }
             } else {
                 $lastBatchTime = Carbon::parse($lastBatch->batch_end_time);
                 $minutesSinceLastBatch = $lastBatchTime->diffInMinutes(now());
-                if ($minutesSinceLastBatch >= 10) {
+                if ($minutesSinceLastBatch >= 60) {
                     $shouldAutoClose = true;
-                    $reason = "No location data for {$minutesSinceLastBatch} minutes";
-                    Log::info("Auto-closing stale session {$activeSession->id} for rider {$rider->id}: Last batch was {$minutesSinceLastBatch} minutes ago");
+                    $reason = "Internet outage - No location data for {$minutesSinceLastBatch} minutes";
+                    Log::warning("⚠️ Auto-closing session {$activeSession->id} for rider {$rider->id}: Last batch was {$minutesSinceLastBatch} minutes ago (internet outage)");
                 }
             }
 
             if ($shouldAutoClose) {
-                // Auto-close the stale session
-                $activeSession->ended_at = $lastBatch ? Carbon::parse($lastBatch->batch_end_time)->addMinutes(10) : $activeSession->started_at->addMinutes(10);
+                // Auto-close due to internet outage (60+ minutes)
+                $endedAt = $lastBatch ? Carbon::parse($lastBatch->batch_end_time)->addMinutes(60) : $activeSession->started_at->addMinutes(60);
+
+                // VALIDATION: Prevent ended_at from being before started_at
+                if ($endedAt->lt($activeSession->started_at)) {
+                    Log::error("🚨 BUG DETECTED: Auto-close tried to set ended_at ({$endedAt}) before started_at ({$activeSession->started_at}) for session {$activeSession->id}");
+                    $endedAt = $activeSession->started_at->copy()->addMinutes(60);
+                }
+
+                $activeSession->ended_at = $endedAt;
                 $activeSession->total_duration_minutes = $activeSession->started_at->diffInMinutes($activeSession->ended_at);
                 $activeSession->total_distance_km = $this->calculateSessionDistance($activeSession->id);
                 $activeSession->status = 'completed';
+                // Note: 'notes' column doesn't exist in duty_sessions table, logging reason instead
                 $activeSession->save();
 
-                Log::info("Session {$activeSession->id} auto-closed successfully. Reason: {$reason}. Distance: {$activeSession->total_distance_km} km");
+                Log::info("✅ Session {$activeSession->id} auto-closed. Started: {$activeSession->started_at}, Ended: {$endedAt}, Reason: {$reason}, Distance: {$activeSession->total_distance_km} km");
 
                 // Clear dashboard cache after auto-closing session
                 $this->dashboardCache->clearTodayPerformance();
             } else {
-                // Session is still active and receiving data
+                // Session is still active - RESUME IT instead of showing error
+                Log::info("Rider {$rider->id} attempted to start duty with existing active session {$activeSession->id}, resuming...");
+
+                // Clear cache to refresh online status
+                $this->riderCache->markRiderOnline($rider->id);
+
+                // Return the active session with 200 OK (not 400 error)
                 return response()->json([
-                    'message' => 'You already have an active duty session',
+                    'message' => 'Duty session resumed',
                     'duty_session' => $activeSession,
-                ], 400);
+                ], 200);
             }
         }
 
@@ -114,13 +132,24 @@ class DutyController extends Controller
         $totalDistance = $this->calculateSessionDistance($session->id);
 
         // Update session
-        $session->ended_at = now();
+        $endedAt = now();
+
+        // VALIDATION: Prevent ended_at from being before started_at
+        if ($endedAt->lt($session->started_at)) {
+            Log::error("🚨 BUG DETECTED: Manual stop tried to set ended_at ({$endedAt}) before started_at ({$session->started_at}) for session {$session->id}");
+            return response()->json([
+                'message' => 'Error: End time cannot be before start time. Please contact support.',
+                'error' => 'INVALID_TIME_RANGE',
+            ], 500);
+        }
+
+        $session->ended_at = $endedAt;
         $session->total_duration_minutes = $session->started_at->diffInMinutes($session->ended_at);
         $session->total_distance_km = $totalDistance;
         $session->status = 'completed';
         $session->save();
 
-        Log::info("Duty session {$session->id} stopped. Duration: {$session->total_duration_minutes} min, Distance: {$totalDistance} km");
+        Log::info("Duty session {$session->id} stopped. Started: {$session->started_at}, Ended: {$endedAt}, Duration: {$session->total_duration_minutes} min, Distance: {$totalDistance} km");
 
         // Clear dashboard cache after stopping session
         $this->dashboardCache->clearTodayPerformance();
@@ -145,7 +174,7 @@ class DutyController extends Controller
             ]);
         }
 
-        // Check if session should be auto-closed due to inactivity
+        // AUTO-CLOSE ONLY IF NO DATA FOR 60+ MINUTES (internet outage)
         $lastBatch = DB::table('location_batches')
             ->where('rider_id', $rider->id)
             ->where('duty_session_id', $session->id)
@@ -156,30 +185,40 @@ class DutyController extends Controller
         $reason = '';
 
         if (!$lastBatch) {
-            // No location data yet - keep session active (they just started)
-            // Only auto-close if session is older than 15 minutes with no data
-            if ($session->started_at->diffInMinutes(now()) >= 15) {
+            // No location data yet - only auto-close if session is older than 60 minutes with no data
+            if ($session->started_at->diffInMinutes(now()) >= 60) {
                 $shouldAutoClose = true;
-                $reason = 'No location data received for 15 minutes';
+                $reason = 'Internet outage - No location data for 60+ minutes';
+                Log::warning("⚠️ Auto-closing session {$session->id} in current() check: No location data for 60+ minutes (internet outage)");
             }
         } else {
             $lastBatchTime = Carbon::parse($lastBatch->batch_end_time);
             $minutesSinceLastBatch = $lastBatchTime->diffInMinutes(now());
-            if ($minutesSinceLastBatch >= 10) {
+            if ($minutesSinceLastBatch >= 60) {
                 $shouldAutoClose = true;
-                $reason = "No location data for {$minutesSinceLastBatch} minutes";
+                $reason = "Internet outage - No location data for {$minutesSinceLastBatch} minutes";
+                Log::warning("⚠️ Auto-closing session {$session->id} in current() check: Last batch was {$minutesSinceLastBatch} minutes ago (internet outage)");
             }
         }
 
         if ($shouldAutoClose) {
-            // Auto-close the stale session
-            $session->ended_at = $lastBatch ? Carbon::parse($lastBatch->batch_end_time)->addMinutes(10) : $session->started_at->addMinutes(10);
+            // Auto-close due to internet outage (60+ minutes)
+            $endedAt = $lastBatch ? Carbon::parse($lastBatch->batch_end_time)->addMinutes(60) : $session->started_at->addMinutes(60);
+
+            // VALIDATION: Prevent ended_at from being before started_at
+            if ($endedAt->lt($session->started_at)) {
+                Log::error("🚨 BUG DETECTED: Auto-close tried to set ended_at ({$endedAt}) before started_at ({$session->started_at}) for session {$session->id}");
+                $endedAt = $session->started_at->copy()->addMinutes(60);
+            }
+
+            $session->ended_at = $endedAt;
             $session->total_duration_minutes = $session->started_at->diffInMinutes($session->ended_at);
             $session->total_distance_km = $this->calculateSessionDistance($session->id);
             $session->status = 'completed';
+            // Note: 'notes' column doesn't exist in duty_sessions table, logging reason instead
             $session->save();
 
-            Log::info("Session {$session->id} auto-closed in current() check. Reason: {$reason}. Distance: {$session->total_distance_km} km");
+            Log::info("✅ Session {$session->id} auto-closed in current() check. Started: {$session->started_at}, Ended: {$endedAt}, Reason: {$reason}, Distance: {$session->total_distance_km} km");
 
             // Clear dashboard cache after auto-closing session
             $this->dashboardCache->clearTodayPerformance();

@@ -383,6 +383,101 @@
         color: #111827;
     }
 
+    /* Rider List */
+    #riderListContainer {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 12px;
+        padding: 4px;
+    }
+
+    .rider-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .rider-card:hover {
+        background: #f9fafb;
+        border-color: #2563EB;
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .rider-card.selected {
+        background: #EFF6FF;
+        border-color: #2563EB;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .rider-status-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        flex-shrink: 0;
+        border: 2px solid white;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    .rider-status-icon.online {
+        background: #10b981;
+    }
+
+    .rider-status-icon.offline {
+        background: #6b7280;
+    }
+
+    .rider-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .rider-name {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #111827;
+        margin-bottom: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .rider-username {
+        font-size: 0.75rem;
+        color: #6b7280;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .rider-status-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .rider-status-badge.online {
+        background: #D1FAE5;
+        color: #065F46;
+    }
+
+    .rider-status-badge.offline {
+        background: #F3F4F6;
+        color: #4B5563;
+    }
+
     /* Responsive */
     @media (max-width: 991px) {
         #map { height: 450px; }
@@ -391,6 +486,9 @@
             margin-top: 20px;
         }
         .stop-info-grid { grid-template-columns: 1fr; }
+        #riderListContainer {
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        }
     }
 
     @media (max-width: 767px) {
@@ -443,6 +541,29 @@
                                     <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
                                     <p class="mt-3 fw-semibold">Loading riders...</p>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Rider List -->
+                        <div class="card-footer bg-white border-top" id="riderListSection">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0 fw-bold">
+                                    <i class="bi bi-people-fill"></i> Riders (<span id="riderCount">0</span>)
+                                </h6>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <button type="button" class="btn btn-outline-primary active" data-filter="all" onclick="filterRiders('all')">
+                                        All
+                                    </button>
+                                    <button type="button" class="btn btn-outline-success" data-filter="online" onclick="filterRiders('online')">
+                                        <i class="bi bi-circle-fill" style="font-size: 8px;"></i> Online
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" data-filter="offline" onclick="filterRiders('offline')">
+                                        <i class="bi bi-circle-fill" style="font-size: 8px;"></i> Offline
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="riderListContainer" style="max-height: 200px; overflow-y: auto;">
+                                <!-- Rider cards will be dynamically inserted here -->
                             </div>
                         </div>
 
@@ -982,6 +1103,9 @@
             }
         });
 
+        // Render rider list at bottom
+        renderRiderList(riders);
+
         // Add installation locations to bounds
         installations.forEach(installation => {
             if (installation.latitude && installation.longitude) {
@@ -993,6 +1117,104 @@
         if (bounds.length > 0) {
             liveMap.fitBounds(bounds, { padding: [80, 80], maxZoom: 16 });
         }
+    }
+
+    // Store all riders globally for filtering
+    let allRiders = [];
+    let currentFilter = 'all';
+    let selectedRiderId = null;
+
+    // Render rider list
+    function renderRiderList(riders) {
+        allRiders = riders;
+        const container = document.getElementById('riderListContainer');
+        const countEl = document.getElementById('riderCount');
+
+        // Apply current filter
+        const filteredRiders = filterRidersByStatus(riders, currentFilter);
+
+        countEl.textContent = filteredRiders.length;
+
+        if (filteredRiders.length === 0) {
+            container.innerHTML = '<div class="text-center text-muted py-3"><i class="bi bi-inbox"></i> No riders found</div>';
+            return;
+        }
+
+        container.innerHTML = filteredRiders.map(rider => {
+            const statusClass = rider.is_online ? 'online' : 'offline';
+            const selected = selectedRiderId === rider.id ? 'selected' : '';
+
+            return `
+                <div class="rider-card ${selected}" onclick="zoomToRider(${rider.id}, ${rider.latitude}, ${rider.longitude}, '${rider.name}')" data-rider-id="${rider.id}" data-status="${statusClass}">
+                    <div class="rider-status-icon ${statusClass}">
+                        <i class="bi bi-person-fill"></i>
+                    </div>
+                    <div class="rider-info">
+                        <div class="rider-name">${rider.name}</div>
+                        <div class="rider-username">@${rider.username}</div>
+                    </div>
+                    <span class="rider-status-badge ${statusClass}">
+                        ${rider.is_online ? 'Online' : 'Offline'}
+                    </span>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Filter riders by status
+    function filterRidersByStatus(riders, filter) {
+        if (filter === 'online') {
+            return riders.filter(r => r.is_online);
+        } else if (filter === 'offline') {
+            return riders.filter(r => !r.is_online);
+        }
+        return riders; // 'all'
+    }
+
+    // Filter riders (called from UI)
+    function filterRiders(filter) {
+        currentFilter = filter;
+
+        // Update button states
+        document.querySelectorAll('[data-filter]').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.getAttribute('data-filter') === filter) {
+                btn.classList.add('active');
+            }
+        });
+
+        // Re-render list with new filter
+        renderRiderList(allRiders);
+    }
+
+    // Zoom to rider on map
+    function zoomToRider(riderId, lat, lng, name) {
+        selectedRiderId = riderId;
+
+        // Update selected state in UI
+        document.querySelectorAll('.rider-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        document.querySelector(`[data-rider-id="${riderId}"]`)?.classList.add('selected');
+
+        // Zoom to rider with good detail level
+        liveMap.setView([parseFloat(lat), parseFloat(lng)], 17, {
+            animate: true,
+            duration: 0.8
+        });
+
+        // Find and open the marker's popup
+        liveMarkersLayer.eachLayer(function(layer) {
+            if (layer.getLatLng) {
+                const markerLatLng = layer.getLatLng();
+                if (Math.abs(markerLatLng.lat - parseFloat(lat)) < 0.0001 &&
+                    Math.abs(markerLatLng.lng - parseFloat(lng)) < 0.0001) {
+                    layer.openPopup();
+                }
+            }
+        });
+
+        console.log(`📍 Zoomed to rider: ${name} at [${lat}, ${lng}]`);
     }
 
     // View rider's today's history on live map
