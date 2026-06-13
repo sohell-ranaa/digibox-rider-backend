@@ -831,7 +831,9 @@
         fetch('/realtime/riders')
             .then(response => response.json())
             .then(data => {
-                const riders = data.riders || [];
+                // Data is returned as direct array, not wrapped in object
+                const riders = Array.isArray(data) ? data : [];
+                console.log('📍 Loaded', riders.length, 'online riders');
                 renderLiveRiders(riders);
                 loadingEl.style.display = 'none';
 
