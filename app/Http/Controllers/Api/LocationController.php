@@ -149,6 +149,12 @@ class LocationController extends Controller
      */
     public function stream(Request $request)
     {
+        // Log stream request for debugging
+        \Log::info('🔴 [STREAM] Received real-time GPS stream', [
+            'rider_id' => $request->user()->id,
+            'data' => $request->all(),
+        ]);
+
         $validated = $request->validate([
             'duty_session_id' => 'required|exists:duty_sessions,id',
             'latitude' => 'required|numeric|between:-90,90',
