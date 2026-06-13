@@ -10,6 +10,7 @@ use App\Services\Cache\RiderCacheService;
 use App\Services\Cache\RealTimeLocationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class LocationController extends Controller
 {
@@ -74,6 +75,7 @@ class LocationController extends Controller
                 'locations.*.bearing' => 'nullable|numeric',
                 'locations.*.altitude' => 'nullable|numeric',
                 'locations.*.recorded_at' => 'required|date',
+                'locations.*.timezone_offset' => 'nullable|integer', // Minutes from UTC
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             \Log::error('❌ [Bulk Upload] Basic validation failed', [
@@ -385,7 +387,23 @@ class LocationController extends Controller
             $batches = [];
 
             foreach ($locations as $loc) {
-                $timestamp = strtotime($loc['recorded_at']);
+                // TIMEZONE CONVERSION: Convert device time to GMT+6
+                $timezoneOffset = $loc['timezone_offset'] ?? 0; // Minutes from UTC
+
+                // Parse device timestamp
+                $deviceTime = Carbon::parse($loc['recorded_at']);
+
+                // Convert to GMT+6:
+                // 1. Remove device timezone offset to get UTC
+                // 2. Add 360 minutes (6 hours) to get GMT+6
+                $bangladeshTime = $deviceTime->copy()
+                    ->subMinutes($timezoneOffset)  // Device → UTC
+                    ->addMinutes(360);              // UTC → GMT+6
+
+                // Store as GMT+6
+                $loc['recorded_at'] = $bangladeshTime->format('Y-m-d H:i:s');
+
+                $timestamp = $bangladeshTime->timestamp;
                 $windowStart = floor($timestamp / 120) * 120; // 120 seconds = 2 minutes
 
                 $key = $loc['duty_session_id'] . '_' . $windowStart;
