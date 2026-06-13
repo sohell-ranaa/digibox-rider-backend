@@ -460,8 +460,11 @@
                                     <button class="btn btn-sm btn-primary" onclick="loadLiveRiders()" title="Refresh live data">
                                         <i class="bi bi-arrow-clockwise"></i>
                                     </button>
+                                    <button id="autoRefreshToggle" class="btn btn-sm btn-success" onclick="toggleAutoRefresh()" title="Pause auto-refresh">
+                                        <i class="bi bi-pause-circle"></i> Auto-Refresh
+                                    </button>
                                     <small class="text-muted">
-                                        <span id="liveStatusText">Click refresh to update</span>
+                                        <span id="liveStatusText">Auto-refresh: ON (every 3s)</span>
                                     </small>
                                 </div>
                                 <small class="text-muted" id="liveLastUpdate">Last updated: Never</small>
@@ -729,6 +732,13 @@
     document.getElementById('history-tab').addEventListener('shown.bs.tab', function () {
         setTimeout(() => {
             map.invalidateSize();
+
+            // Pause auto-refresh when switching to History tab (save resources)
+            if (realtimeRefreshInterval) {
+                clearInterval(realtimeRefreshInterval);
+                realtimeRefreshInterval = null;
+                console.log('⏸️ Auto-refresh paused (switched to History tab)');
+            }
         }, 100);
     });
 
@@ -811,6 +821,7 @@
     // Live tracking functions
     // AUTO-REFRESH INTERVAL (3 seconds for real-time)
     let realtimeRefreshInterval = null;
+    let autoRefreshEnabled = true; // Track auto-refresh state
 
     function loadLiveRiders() {
         const loadingEl = document.getElementById('liveMapLoading');
@@ -823,10 +834,13 @@
                 const riders = data.riders || [];
                 renderLiveRiders(riders);
                 loadingEl.style.display = 'none';
-                document.getElementById('liveLastUpdate').textContent = 'Last updated: ' + new Date().toLocaleTimeString() + ' (LIVE)';
 
-                // Start auto-refresh if not already running
-                if (!realtimeRefreshInterval) {
+                const timestamp = new Date().toLocaleTimeString();
+                const liveStatus = autoRefreshEnabled ? '(LIVE)' : '(PAUSED)';
+                document.getElementById('liveLastUpdate').textContent = 'Last updated: ' + timestamp + ' ' + liveStatus;
+
+                // Start auto-refresh if enabled and not already running
+                if (autoRefreshEnabled && !realtimeRefreshInterval) {
                     realtimeRefreshInterval = setInterval(loadLiveRiders, 3000); // Refresh every 3 seconds
                     console.log('✅ Real-time auto-refresh started (3s interval)');
                 }
@@ -835,6 +849,41 @@
                 console.error('Error loading live riders:', error);
                 loadingEl.style.display = 'none';
             });
+    }
+
+    // Toggle auto-refresh on/off
+    function toggleAutoRefresh() {
+        autoRefreshEnabled = !autoRefreshEnabled;
+
+        const toggleBtn = document.getElementById('autoRefreshToggle');
+        const statusText = document.getElementById('liveStatusText');
+
+        if (autoRefreshEnabled) {
+            // Resume auto-refresh
+            toggleBtn.className = 'btn btn-sm btn-success';
+            toggleBtn.innerHTML = '<i class="bi bi-pause-circle"></i> Auto-Refresh';
+            toggleBtn.title = 'Pause auto-refresh';
+            statusText.textContent = 'Auto-refresh: ON (every 3s)';
+
+            // Start interval
+            if (!realtimeRefreshInterval) {
+                realtimeRefreshInterval = setInterval(loadLiveRiders, 3000);
+                console.log('✅ Auto-refresh resumed');
+            }
+        } else {
+            // Pause auto-refresh
+            toggleBtn.className = 'btn btn-sm btn-secondary';
+            toggleBtn.innerHTML = '<i class="bi bi-play-circle"></i> Auto-Refresh';
+            toggleBtn.title = 'Resume auto-refresh';
+            statusText.textContent = 'Auto-refresh: OFF (manual mode)';
+
+            // Stop interval
+            if (realtimeRefreshInterval) {
+                clearInterval(realtimeRefreshInterval);
+                realtimeRefreshInterval = null;
+                console.log('⏸️ Auto-refresh paused');
+            }
+        }
     }
 
     // Stop auto-refresh when leaving page
