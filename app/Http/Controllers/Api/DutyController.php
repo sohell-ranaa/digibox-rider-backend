@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\DutySession;
+use App\Services\Cache\DashboardCacheService;
+use App\Services\Cache\RiderCacheService;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -11,6 +13,14 @@ use Illuminate\Support\Facades\DB;
 
 class DutyController extends Controller
 {
+    protected $dashboardCache;
+    protected $riderCache;
+
+    public function __construct(DashboardCacheService $dashboardCache, RiderCacheService $riderCache)
+    {
+        $this->dashboardCache = $dashboardCache;
+        $this->riderCache = $riderCache;
+    }
     public function start(Request $request)
     {
         $rider = $request->user();
@@ -55,6 +65,9 @@ class DutyController extends Controller
                 $activeSession->save();
 
                 Log::info("Session {$activeSession->id} auto-closed successfully. Reason: {$reason}. Distance: {$activeSession->total_distance_km} km");
+
+                // Clear dashboard cache after auto-closing session
+                $this->dashboardCache->clearTodayPerformance();
             } else {
                 // Session is still active and receiving data
                 return response()->json([
@@ -72,6 +85,10 @@ class DutyController extends Controller
         ]);
 
         Log::info("New duty session {$session->id} started for rider {$rider->id}");
+
+        // Clear dashboard cache after starting new session
+        $this->dashboardCache->clearTodayPerformance();
+        $this->riderCache->markRiderOnline($rider->id);
 
         return response()->json([
             'message' => 'Duty session started successfully',
@@ -104,6 +121,9 @@ class DutyController extends Controller
         $session->save();
 
         Log::info("Duty session {$session->id} stopped. Duration: {$session->total_duration_minutes} min, Distance: {$totalDistance} km");
+
+        // Clear dashboard cache after stopping session
+        $this->dashboardCache->clearTodayPerformance();
 
         return response()->json([
             'message' => 'Duty session ended successfully',
@@ -160,6 +180,9 @@ class DutyController extends Controller
             $session->save();
 
             Log::info("Session {$session->id} auto-closed in current() check. Reason: {$reason}. Distance: {$session->total_distance_km} km");
+
+            // Clear dashboard cache after auto-closing session
+            $this->dashboardCache->clearTodayPerformance();
 
             return response()->json([
                 'duty_session' => null,

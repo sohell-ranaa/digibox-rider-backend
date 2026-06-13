@@ -6,10 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Models\InstallationLocation;
 use App\Models\InstallationVisit;
 use App\Models\DutySession;
+use App\Services\Cache\RiderCacheService;
 use Illuminate\Http\Request;
 
 class LocationController extends Controller
 {
+    protected $riderCache;
+
+    public function __construct(RiderCacheService $riderCache)
+    {
+        $this->riderCache = $riderCache;
+    }
     public function record(Request $request)
     {
         $validated = $request->validate([
@@ -24,6 +31,12 @@ class LocationController extends Controller
         ]);
 
         $rider = $request->user();
+
+        // Mark rider as online in Redis cache
+        $this->riderCache->markRiderOnline($rider->id, [
+            'latitude' => $validated['latitude'],
+            'longitude' => $validated['longitude'],
+        ]);
 
         // Check for installation visits (geofencing)
         $this->checkInstallationVisitsFromArray($rider->id, $validated['duty_session_id'], $validated);
@@ -66,6 +79,16 @@ class LocationController extends Controller
         }
 
         $rider = $request->user();
+
+        // Mark rider as online in Redis cache with first location
+        if (!empty($validated['locations'])) {
+            $firstLoc = $validated['locations'][0];
+            $this->riderCache->markRiderOnline($rider->id, [
+                'latitude' => $firstLoc['latitude'],
+                'longitude' => $firstLoc['longitude'],
+            ]);
+        }
+
         $inserted = 0;
         $skipped = 0;
         $invalidSessionIds = [];

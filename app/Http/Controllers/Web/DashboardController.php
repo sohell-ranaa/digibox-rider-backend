@@ -8,106 +8,45 @@ use App\Models\DutySession;
 use App\Models\StopRecord;
 use App\Models\InstallationLocation;
 use App\Models\InstallationVisit;
+use App\Services\Cache\DashboardCacheService;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
+    protected $cacheService;
+
+    public function __construct(DashboardCacheService $cacheService)
+    {
+        $this->cacheService = $cacheService;
+    }
+
     public function index()
     {
         $today = Carbon::today();
         $now = Carbon::now();
 
         // =====================================================
-        // SECTION 1: KEY METRICS (Top Cards)
+        // SECTION 1: KEY METRICS (Top Cards) - CACHED
         // =====================================================
 
-        // Total active riders in system
-        $totalRiders = Rider::where('is_active', true)->count();
-
-        // Riders currently online RIGHT NOW (with location data in last 10 min)
-        $onlineRiderIds = DB::table('location_batches')
-            ->where('batch_end_time', '>=', Carbon::now()->subMinutes(10))
-            ->distinct('rider_id')
-            ->pluck('rider_id');
-        $onlineRiders = Rider::where('is_active', true)
-            ->whereIn('id', $onlineRiderIds)
-            ->count();
-
-        // Today's location points recorded (sum point_count from batches)
-        $todayLocations = DB::table('location_batches')
-            ->whereDate('batch_start_time', $today)
-            ->sum('point_count');
-
-        // Total installations in system
-        $totalInstallations = InstallationLocation::where('is_active', true)->count();
+        // Use cached data for better performance
+        $totalRiders = $this->cacheService->getTotalActiveRiders();
+        $onlineRiders = $this->cacheService->getOnlineRidersCount();
+        $todayLocations = $this->cacheService->getTodayLocations();
+        $totalInstallations = $this->cacheService->getTotalInstallations();
 
         // =====================================================
-        // SECTION 2: TODAY'S PERFORMANCE
+        // SECTION 2: TODAY'S PERFORMANCE - CACHED
         // =====================================================
 
-        // Today's duty sessions (completed + active)
-        $todaySessions = DutySession::whereDate('started_at', $today)->count();
-
-        // Today's stops
-        $todayStops = StopRecord::whereDate('started_at', $today)->count();
-
-        // Today's installation visits
-        $todayVisits = InstallationVisit::whereDate('arrived_at', $today)->count();
-
-        // Total duty hours today (including active sessions)
-        $completedMinutes = DutySession::whereDate('started_at', $today)
-            ->where('status', 'completed')
-            ->sum('total_duration_minutes');
-
-        // Add active session durations (calculate from start to now)
-        $activeSessions = DutySession::whereDate('started_at', $today)
-            ->where('status', 'active')
-            ->get();
-
-        $activeMinutes = 0;
-        foreach ($activeSessions as $session) {
-            $activeMinutes += $session->started_at->diffInMinutes($now);
-        }
-
-        $todayDutyHours = round(($completedMinutes + $activeMinutes) / 60, 1);
-
-        // Total distance covered today (including active sessions)
-        $completedDistance = DutySession::whereDate('started_at', $today)
-            ->where('status', 'completed')
-            ->sum('total_distance_km');
-
-        // Calculate distance for active sessions from their GPS points
-        $activeDistance = 0;
-        foreach ($activeSessions as $session) {
-            // Get all batches for this session and sum the distances between points
-            $batches = DB::table('location_batches')
-                ->where('duty_session_id', $session->id)
-                ->orderBy('batch_start_time', 'asc')
-                ->get();
-
-            $sessionDistance = 0;
-            $previousPoint = null;
-
-            foreach ($batches as $batch) {
-                $points = json_decode($batch->points, true);
-                foreach ($points as $point) {
-                    if ($previousPoint) {
-                        $sessionDistance += $this->haversineDistance(
-                            $previousPoint['lat'],
-                            $previousPoint['lng'],
-                            $point['lat'],
-                            $point['lng']
-                        );
-                    }
-                    $previousPoint = $point;
-                }
-            }
-
-            $activeDistance += $sessionDistance / 1000; // Convert meters to km
-        }
-
-        $todayDistance = round($completedDistance + $activeDistance, 2);
+        // Use cached performance data
+        $performance = $this->cacheService->getTodayPerformance();
+        $todaySessions = $performance['sessions'];
+        $todayStops = $performance['stops'];
+        $todayVisits = $performance['visits'];
+        $todayDutyHours = $performance['hours'];
+        $todayDistance = $performance['distance'];
 
         // =====================================================
         // SECTION 3: REAL-TIME ONLINE RIDERS & LIVE MAP
@@ -198,29 +137,14 @@ class DashboardController extends Controller
         });
 
         // =====================================================
-        // SECTION 5: THIS WEEK'S TREND (7 days chart)
+        // SECTION 5: THIS WEEK'S TREND (7 days chart) - CACHED
         // =====================================================
 
-        $weekDays = [];
-        $weekSessions = [];
-        $weekVisits = [];
-        $weekLocations = [];
-
-        for ($i = 6; $i >= 0; $i--) {
-            $date = Carbon::today()->subDays($i);
-            $weekDays[] = $date->format('D, M j'); // "Mon, Jun 11"
-
-            // Sessions per day
-            $weekSessions[] = DutySession::whereDate('started_at', $date)->count();
-
-            // Visits per day
-            $weekVisits[] = InstallationVisit::whereDate('arrived_at', $date)->count();
-
-            // Locations per day (sum point counts from batches)
-            $weekLocations[] = DB::table('location_batches')
-                ->whereDate('batch_start_time', $date)
-                ->sum('point_count') ?: 0;
-        }
+        $weeklyTrend = $this->cacheService->getWeeklyTrend();
+        $weekDays = $weeklyTrend['days'];
+        $weekSessions = $weeklyTrend['sessions'];
+        $weekVisits = $weeklyTrend['visits'];
+        $weekLocations = $weeklyTrend['locations'];
 
         // =====================================================
         // SECTION 6: RIDER PERFORMANCE (Top 5)
@@ -253,17 +177,10 @@ class DashboardController extends Controller
             });
 
         // =====================================================
-        // SECTION 7: HOURLY ACTIVITY TODAY
+        // SECTION 7: HOURLY ACTIVITY TODAY - CACHED
         // =====================================================
 
-        $hourlyActivity = [];
-        for ($hour = 0; $hour < 24; $hour++) {
-            $count = DB::table('location_batches')
-                ->whereDate('batch_start_time', $today)
-                ->whereRaw('HOUR(batch_start_time) = ?', [$hour])
-                ->sum('point_count');
-            $hourlyActivity[] = $count ?: 0;
-        }
+        $hourlyActivity = $this->cacheService->getHourlyActivity();
 
         // =====================================================
         // SECTION 8: ALERTS & ISSUES
@@ -282,25 +199,16 @@ class DashboardController extends Controller
             ->count();
 
         // =====================================================
-        // SECTION 9: MONTH COMPARISON
+        // SECTION 9: MONTH COMPARISON - CACHED
         // =====================================================
 
-        $thisMonth = Carbon::now()->startOfMonth();
-        $lastMonth = Carbon::now()->subMonth()->startOfMonth();
-        $lastMonthEnd = Carbon::now()->subMonth()->endOfMonth();
-
-        // This month vs last month
-        $thisMonthSessions = DutySession::where('started_at', '>=', $thisMonth)->count();
-        $lastMonthSessions = DutySession::whereBetween('started_at', [$lastMonth, $lastMonthEnd])->count();
-        $sessionsChange = $lastMonthSessions > 0
-            ? round((($thisMonthSessions - $lastMonthSessions) / $lastMonthSessions) * 100, 1)
-            : 0;
-
-        $thisMonthVisits = InstallationVisit::where('arrived_at', '>=', $thisMonth)->count();
-        $lastMonthVisits = InstallationVisit::whereBetween('arrived_at', [$lastMonth, $lastMonthEnd])->count();
-        $visitsChange = $lastMonthVisits > 0
-            ? round((($thisMonthVisits - $lastMonthVisits) / $lastMonthVisits) * 100, 1)
-            : 0;
+        $monthlyData = $this->cacheService->getMonthlyComparison();
+        $thisMonthSessions = $monthlyData['thisMonthSessions'];
+        $lastMonthSessions = $monthlyData['lastMonthSessions'];
+        $sessionsChange = $monthlyData['sessionsChange'];
+        $thisMonthVisits = $monthlyData['thisMonthVisits'];
+        $lastMonthVisits = $monthlyData['lastMonthVisits'];
+        $visitsChange = $monthlyData['visitsChange'];
 
         // =====================================================
         // SECTION 10: GPS TRACKING QUALITY METRICS
