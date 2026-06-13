@@ -102,38 +102,6 @@
     </div>
 </div>
 
-{{-- GPS TRACKING QUALITY --}}
-<div class="row mb-4 g-2 g-md-3">
-    <div class="col-6 col-md-6">
-        <div class="stat-card" style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <h6 class="mb-1 opacity-75">GPS Accuracy Today</h6>
-                    <h2 class="mb-0">{{ $todayAvgAccuracy }}m</h2>
-                    <small class="text-muted">
-                        <i class="bi bi-check-circle-fill text-success"></i> Average accuracy
-                    </small>
-                </div>
-                <i class="bi bi-bullseye d-none d-md-block" style="font-size: 48px; opacity: 0.3; color: var(--digibox-blue);"></i>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-6">
-        <div class="stat-card" style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <h6 class="mb-1 opacity-75">High Quality GPS</h6>
-                    <h2 class="mb-0">{{ $todayHighAccuracyPercent }}%</h2>
-                    <small class="text-muted">
-                        <i class="bi bi-stars"></i> Points &lt;20m accuracy
-                    </small>
-                </div>
-                <i class="bi bi-star-fill d-none d-md-block" style="font-size: 48px; opacity: 0.3; color: var(--success-green);"></i>
-            </div>
-        </div>
-    </div>
-</div>
-
 {{-- TODAY'S PERFORMANCE ROW --}}
 <div class="row mb-4">
     <div class="col-md-12">
