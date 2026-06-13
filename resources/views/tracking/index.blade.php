@@ -460,11 +460,11 @@
                                     <button class="btn btn-sm btn-primary" onclick="loadLiveRiders()" title="Refresh live data">
                                         <i class="bi bi-arrow-clockwise"></i>
                                     </button>
-                                    <button id="autoRefreshToggle" class="btn btn-sm btn-success" onclick="toggleAutoRefresh()" title="Pause auto-refresh">
-                                        <i class="bi bi-pause-circle"></i> Auto-Refresh
+                                    <button id="autoRefreshToggle" class="btn btn-sm btn-secondary" onclick="toggleAutoRefresh()" title="Enable auto-refresh">
+                                        <i class="bi bi-play-circle"></i> Auto-Refresh
                                     </button>
                                     <small class="text-muted">
-                                        <span id="liveStatusText">Auto-refresh: ON (every 3s)</span>
+                                        <span id="liveStatusText">Auto-refresh: OFF (click to enable)</span>
                                     </small>
                                 </div>
                                 <small class="text-muted" id="liveLastUpdate">Last updated: Never</small>
@@ -819,9 +819,9 @@
     }
 
     // Live tracking functions
-    // AUTO-REFRESH INTERVAL (3 seconds for real-time)
+    // AUTO-REFRESH INTERVAL (60 seconds / 1 minute)
     let realtimeRefreshInterval = null;
-    let autoRefreshEnabled = true; // Track auto-refresh state
+    let autoRefreshEnabled = false; // Track auto-refresh state (OFF by default)
 
     function loadLiveRiders() {
         const loadingEl = document.getElementById('liveMapLoading');
@@ -841,8 +841,8 @@
 
                 // Start auto-refresh if enabled and not already running
                 if (autoRefreshEnabled && !realtimeRefreshInterval) {
-                    realtimeRefreshInterval = setInterval(loadLiveRiders, 3000); // Refresh every 3 seconds
-                    console.log('✅ Real-time auto-refresh started (3s interval)');
+                    realtimeRefreshInterval = setInterval(loadLiveRiders, 60000); // Refresh every 60 seconds (1 minute)
+                    console.log('✅ Auto-refresh started (60s interval)');
                 }
             })
             .catch(error => {
@@ -859,29 +859,29 @@
         const statusText = document.getElementById('liveStatusText');
 
         if (autoRefreshEnabled) {
-            // Resume auto-refresh
+            // Enable auto-refresh
             toggleBtn.className = 'btn btn-sm btn-success';
             toggleBtn.innerHTML = '<i class="bi bi-pause-circle"></i> Auto-Refresh';
             toggleBtn.title = 'Pause auto-refresh';
-            statusText.textContent = 'Auto-refresh: ON (every 3s)';
+            statusText.textContent = 'Auto-refresh: ON (every 1 min)';
 
             // Start interval
             if (!realtimeRefreshInterval) {
-                realtimeRefreshInterval = setInterval(loadLiveRiders, 3000);
-                console.log('✅ Auto-refresh resumed');
+                realtimeRefreshInterval = setInterval(loadLiveRiders, 60000); // 60 seconds = 1 minute
+                console.log('✅ Auto-refresh enabled (60s interval)');
             }
         } else {
-            // Pause auto-refresh
+            // Disable auto-refresh
             toggleBtn.className = 'btn btn-sm btn-secondary';
             toggleBtn.innerHTML = '<i class="bi bi-play-circle"></i> Auto-Refresh';
-            toggleBtn.title = 'Resume auto-refresh';
-            statusText.textContent = 'Auto-refresh: OFF (manual mode)';
+            toggleBtn.title = 'Enable auto-refresh';
+            statusText.textContent = 'Auto-refresh: OFF (click to enable)';
 
             // Stop interval
             if (realtimeRefreshInterval) {
                 clearInterval(realtimeRefreshInterval);
                 realtimeRefreshInterval = null;
-                console.log('⏸️ Auto-refresh paused');
+                console.log('⏸️ Auto-refresh disabled');
             }
         }
     }
