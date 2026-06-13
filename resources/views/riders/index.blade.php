@@ -886,19 +886,6 @@
                 </div>
             </div>
         </div>
-        <div class="col-12 col-md-4 col-lg-3">
-            <div class="stats-card">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <p class="text-muted mb-1 small">Working</p>
-                        <h3 class="mb-0 fw-bold">{{ $riders->where('is_on_duty', true)->count() }}</h3>
-                    </div>
-                    <div class="icon-wrapper" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white;">
-                        <i class="bi bi-briefcase-fill"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Search & Filter Section -->
