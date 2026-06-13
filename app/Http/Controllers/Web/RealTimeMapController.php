@@ -24,33 +24,48 @@ class RealTimeMapController extends Controller
         // Get real-time locations from Redis
         $locations = $this->realTimeLocation->getAllOnlineRiders();
 
-        // Enrich with rider data
+        // Enrich with rider data and active duty sessions
         $riderIds = array_column($locations, 'rider_id');
         $riders = Rider::whereIn('id', $riderIds)->get()->keyBy('id');
 
         $enrichedLocations = array_map(function($location) use ($riders) {
             $rider = $riders[$location['rider_id']] ?? null;
 
+            if (!$rider) {
+                return null; // Skip if rider not found
+            }
+
+            // Get active duty session
+            $activeSession = \App\Models\DutySession::where('rider_id', $rider->id)
+                ->where('status', 'active')
+                ->first();
+
+            // Parse recorded_at time
+            $recordedAt = \Carbon\Carbon::parse($location['recorded_at']);
+            $isOnline = $recordedAt->diffInMinutes(now()) < 10; // Online if within 10 min
+
             return [
-                'rider_id' => $location['rider_id'],
-                'rider_name' => $rider->name ?? 'Unknown',
-                'rider_phone' => $rider->phone ?? null,
-                'latitude' => $location['latitude'],
-                'longitude' => $location['longitude'],
+                'id' => $rider->id,
+                'name' => $rider->name,
+                'username' => $rider->username,
+                'latitude' => (float) $location['latitude'],
+                'longitude' => (float) $location['longitude'],
                 'accuracy' => $location['accuracy'] ?? 0,
                 'speed' => $location['speed'] ?? 0,
-                'bearing' => $location['bearing'] ?? 0,
-                'recorded_at' => $location['recorded_at'],
-                'updated_at' => $location['updated_at'],
+                'recorded_at' => $recordedAt->diffForHumans(),
+                'recorded_at_full' => $recordedAt->format('Y-m-d H:i:s'),
+                'is_online' => $isOnline,
+                'is_on_duty' => $activeSession !== null,
+                'duty_started_at' => $activeSession ? $activeSession->started_at->format('h:i A') : null,
+                'duty_duration' => $activeSession ? $activeSession->started_at->diffForHumans(null, true) : null,
+                'status' => $isOnline ? 'Online' : 'Offline',
             ];
         }, $locations);
 
-        return response()->json([
-            'success' => true,
-            'count' => count($enrichedLocations),
-            'riders' => $enrichedLocations,
-            'timestamp' => now()->toDateTimeString(),
-        ]);
+        // Filter out nulls
+        $enrichedLocations = array_filter($enrichedLocations);
+
+        return response()->json(array_values($enrichedLocations));
     }
 
     /**

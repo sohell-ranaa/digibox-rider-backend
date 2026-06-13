@@ -9,6 +9,7 @@ use App\Models\DutySession;
 use App\Services\Cache\RiderCacheService;
 use App\Services\Cache\RealTimeLocationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class LocationController extends Controller
 {
